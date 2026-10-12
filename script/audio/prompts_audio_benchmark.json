@@ -1,0 +1,246 @@
+{
+  "description": "音频生成 Benchmark Prompts - 为视频/图文prompt生成对应的音效/BGM/人声",
+  "note": "每个场景分别提供: tangoflux_sfx(音效), ace_step_bgm(BGM音乐), songgen_song(歌曲), cosyvoice_tts(旁白/台词)",
+  "scenarios": [
+    {
+      "id": "scene_01_pure_music",
+      "category": "纯音乐 (Pure Music / Instrumental)",
+      "video_prompt": "A cinematic timelapse of sunrise over misty mountains, golden light slowly illuminating valleys and rivers below, clouds flowing like silk through mountain passes.",
+      "tangoflux_sfx": {
+        "prompt": "Gentle mountain wind blowing through valleys, distant bird songs echoing, soft flowing river water sounds, peaceful morning nature ambience",
+        "duration": 30,
+        "steps": 50
+      },
+      "ace_step_bgm": {
+        "prompt": "epic cinematic, orchestral, instrumental, majestic, sunrise, inspirational, strings and brass, slow tempo, 80 bpm",
+        "lyrics": "[inst-long] ; [inst-long] ; [inst-long]",
+        "duration": 120
+      },
+      "songgen_song": {
+        "descriptions": "instrumental, orchestral, cinematic, epic, majestic, strings and piano",
+        "gt_lyric": "[inst-long] ; [inst-long] ; [inst-long]",
+        "auto_prompt_audio_type": "Soundtrack"
+      },
+      "cosyvoice_tts": {
+        "text_zh": "晨曦初露，薄雾笼罩着连绵的群山。金色的阳光穿透云层，洒落在蜿蜒的河谷之间，一切都沐浴在宁静而壮美的自然光辉之中。",
+        "text_en": "As dawn breaks over the misty mountains, golden sunlight pierces through the clouds, cascading across winding valleys below. Everything bathes in the serene and magnificent glow of nature."
+      }
+    },
+    {
+      "id": "scene_02_pure_music",
+      "category": "纯音乐 (Pure Music / Instrumental)",
+      "video_prompt": "A peaceful zen garden with raked sand patterns, cherry blossoms falling gently in slow motion, water trickling from a bamboo fountain.",
+      "tangoflux_sfx": {
+        "prompt": "Japanese zen garden ambience, bamboo water fountain dripping, gentle wind through cherry blossom trees, birds chirping softly, peaceful meditation atmosphere",
+        "duration": 30,
+        "steps": 50
+      },
+      "ace_step_bgm": {
+        "prompt": "japanese traditional, zen, peaceful, meditation, koto and shakuhachi, ambient, slow, 60 bpm, instrumental",
+        "lyrics": "[inst-long] ; [inst-long] ; [inst-long]",
+        "duration": 120
+      },
+      "songgen_song": {
+        "descriptions": "instrumental, zen, japanese, peaceful, koto and flute, ambient",
+        "gt_lyric": "[inst-long] ; [inst-long] ; [inst-long]",
+        "auto_prompt_audio_type": "World"
+      },
+      "cosyvoice_tts": {
+        "text_zh": "枯山水庭院中，细沙被精心耙成波纹状的图案。樱花瓣随风轻轻飘落，竹制水车发出清脆的滴水声，一切都沉浸在禅意的宁静之中。",
+        "text_en": "In the karesansui garden, fine sand is meticulously raked into rippling patterns. Cherry blossom petals drift gently in the wind, while a bamboo fountain produces crystal-clear droplets, everything immersed in zen-like tranquility."
+      }
+    },
+    {
+      "id": "scene_03_pure_music",
+      "category": "纯音乐 (Pure Music / Instrumental)",
+      "video_prompt": "A nighttime cityscape with neon lights reflecting off rain-soaked streets, cars passing by leaving trails of light, jazz club ambience visible through windows.",
+      "tangoflux_sfx": {
+        "prompt": "Rainy city night ambience, car tires on wet road, distant jazz music through walls, neon signs buzzing, rain drops on metal surfaces, urban nightlife atmosphere",
+        "duration": 30,
+        "steps": 50
+      },
+      "ace_step_bgm": {
+        "prompt": "lo-fi jazz, rainy night, saxophone, piano, moody, urban, chill, relaxing, 85 bpm, instrumental",
+        "lyrics": "[inst-long] ; [inst-long] ; [inst-long]",
+        "duration": 120
+      },
+      "songgen_song": {
+        "descriptions": "instrumental, jazz, lo-fi, saxophone and piano, moody, urban night",
+        "gt_lyric": "[inst-long] ; [inst-long] ; [inst-long]",
+        "auto_prompt_audio_type": "Jazz"
+      },
+      "cosyvoice_tts": {
+        "text_zh": "雨夜的城市街头，霓虹灯在湿漉漉的路面上投射出斑斓的倒影。远处传来爵士乐的旋律，车辆驶过溅起细小的水花，这座不夜城在雨幕中散发着独特的魅力。",
+        "text_en": "On rainy city streets at night, neon lights cast colorful reflections on the wet pavement. Jazz melodies drift from afar, cars splash through puddles, and this city that never sleeps exudes its unique charm through the curtain of rain."
+      }
+    },
+    {
+      "id": "scene_04_anime",
+      "category": "动漫 (Anime / Animation)",
+      "video_prompt": "An anime magical girl transformation sequence, sparkles and ribbons swirling around the character, bright colorful energy explosions, dynamic camera angles with speed lines.",
+      "tangoflux_sfx": {
+        "prompt": "Magical transformation sound effects, sparkling chimes and bells, energy whoosh and swirl, bright magical explosion burst, anime power-up sequence sounds",
+        "duration": 15,
+        "steps": 50
+      },
+      "ace_step_bgm": {
+        "prompt": "anime opening, j-pop, energetic, female vocal, catchy, upbeat, synth and electric guitar, 150 bpm, exciting, magical girl",
+        "lyrics": "[intro-short] ; [verse] Feel the magic in my heart, shining bright like a star. Every dream will come alive, reaching for the sky so far ; [chorus] Transform! We can change the world tonight. With the power of our light. Dancing through the stars so bright. We will never lose this fight ; [inst-short] ; [verse] Colors swirling all around, lifting up above the ground. Every beat will make us strong, singing out our battle song ; [chorus] Transform! We can change the world tonight. With the power of our light. Dancing through the stars so bright. We will never lose this fight ; [outro-short]",
+        "duration": 180
+      },
+      "songgen_song": {
+        "descriptions": "female, energetic, j-pop, anime, catchy, synth and guitar, upbeat, the bpm is 150",
+        "gt_lyric": "[intro-short] ; [verse] 星光闪耀在我心中.梦想如同璀璨的星空.每一步都充满力量.向着未来勇敢前行 ; [chorus] 变身吧.用光芒改变世界.用勇气照亮黑暗.在星辰中翩翩起舞.我们永不言败 ; [inst-short] ; [verse] 色彩在身边旋转飞舞.带我飞向更高的天空.每个音符都是力量.唱响我们的战歌 ; [chorus] 变身吧.用光芒改变世界.用勇气照亮黑暗.在星辰中翩翩起舞.我们永不言败 ; [outro-short]",
+        "auto_prompt_audio_type": "Pop"
+      },
+      "cosyvoice_tts": {
+        "text_zh": "星光啊，请赐予我力量！以光之名，变身！黑暗终将被光明驱散，我将守护这个世界的每一份美好！",
+        "text_en": "Starlight, grant me your power! In the name of light, transform! Darkness shall be banished by radiance, and I will protect every precious thing in this world!"
+      }
+    },
+    {
+      "id": "scene_05_anime",
+      "category": "动漫 (Anime / Animation)",
+      "video_prompt": "A Studio Ghibli style scene of a young girl sitting on a grassy hillside watching clouds drift by, a gentle breeze moving through tall grass, a cat sleeping beside her.",
+      "tangoflux_sfx": {
+        "prompt": "Peaceful countryside ambience, gentle breeze through tall grass field, distant meadow birds singing, soft purring of a sleeping cat, rustling leaves, tranquil summer afternoon",
+        "duration": 30,
+        "steps": 50
+      },
+      "ace_step_bgm": {
+        "prompt": "ghibli style, gentle, acoustic piano, whimsical, dreamy, nostalgic, soft strings, music box, 70 bpm, instrumental, childhood memories",
+        "lyrics": "[inst-long] ; [inst-long] ; [inst-long]",
+        "duration": 120
+      },
+      "songgen_song": {
+        "descriptions": "instrumental, ghibli, piano, gentle, dreamy, nostalgic, acoustic, soft",
+        "gt_lyric": "[inst-long] ; [inst-long] ; [inst-long]",
+        "auto_prompt_audio_type": "Soundtrack"
+      },
+      "cosyvoice_tts": {
+        "text_zh": "躺在山坡上，看着白云慢慢飘过蔚蓝的天空。微风拂过长长的草地，身旁的小猫发出轻轻的呼噜声。这个夏天的午后，时间仿佛都停止了流动。",
+        "text_en": "Lying on the hillside, watching white clouds slowly drift across the azure sky. A gentle breeze sweeps through the tall grass, and the little cat beside me purrs softly. On this summer afternoon, time itself seems to have stopped flowing."
+      }
+    },
+    {
+      "id": "scene_06_anime",
+      "category": "动漫 (Anime / Animation)",
+      "video_prompt": "An intense anime battle scene between two warriors with glowing swords, energy blasts creating shockwaves, debris flying through the air, dramatic close-ups of determined faces.",
+      "tangoflux_sfx": {
+        "prompt": "Intense sword clashing metal sounds, energy blast explosions, ground cracking and debris flying, wind pressure shockwave whoosh, intense battle combat sounds, dramatic impact effects",
+        "duration": 15,
+        "steps": 50
+      },
+      "ace_step_bgm": {
+        "prompt": "anime battle, rock, intense, electric guitar, heavy drums, epic orchestral, fast tempo, 170 bpm, male vocal, powerful, dramatic",
+        "lyrics": "[intro-short] ; [verse] Standing at the edge of fate, blades of fire illuminate. Every scar tells a tale, warriors who will never fail ; [chorus] Fight on! Through the storm we rise again. Break the chains of endless pain. Thunder roars across the sky. We were born to never die ; [inst-short] ; [verse] Shadows fall but we stand tall, answer to the battle call. Steel on steel the sparks ignite, burning through the endless night ; [chorus] Fight on! Through the storm we rise again. Break the chains of endless pain. Thunder roars across the sky. We were born to never die ; [outro-short]",
+        "duration": 180
+      },
+      "songgen_song": {
+        "descriptions": "male, rock, intense, electric guitar and heavy drums, fast, the bpm is 170, battle, epic",
+        "gt_lyric": "[intro-short] ; [verse] 站在命运的边缘.火焰之刃照亮一切.每道伤疤都在诉说.永不屈服的战士之歌 ; [chorus] 战斗吧.穿越风暴我们再次崛起.打碎无尽的枷锁.雷鸣响彻天际.我们生而不灭 ; [inst-short] ; [verse] 黑暗降临我们依然挺立.回应战斗的号角.钢铁碰撞火花飞溅.燃烧在无尽的黑夜 ; [chorus] 战斗吧.穿越风暴我们再次崛起.打碎无尽的枷锁.雷鸣响彻天际.我们生而不灭 ; [outro-short]",
+        "auto_prompt_audio_type": "Rock"
+      },
+      "cosyvoice_tts": {
+        "text_zh": "来吧！让我们一决高下！这把剑承载着我所有同伴的意志，我绝对不会在这里倒下！这是最后的决战！",
+        "text_en": "Come on! Let us settle this once and for all! This sword carries the will of all my companions, and I absolutely will not fall here! This is the final battle!"
+      }
+    },
+    {
+      "id": "scene_07_live_action_sports",
+      "category": "真人运动 (Live Action Sports / Real Human Motion)",
+      "video_prompt": "A professional surfer riding a massive ocean wave, water spraying dramatically, golden sunset backlight creating silhouette effects, slow motion capture of acrobatic maneuvers.",
+      "tangoflux_sfx": {
+        "prompt": "Massive ocean wave crashing sounds, water spraying and splashing, surfboard cutting through water, strong coastal wind, underwater bubbling, dramatic wave break impact",
+        "duration": 20,
+        "steps": 50
+      },
+      "ace_step_bgm": {
+        "prompt": "surf rock, energetic, summer vibes, electric guitar, beach drums, upbeat, 130 bpm, california, feel good, instrumental",
+        "lyrics": "[inst-long] ; [inst-long] ; [inst-long]",
+        "duration": 120
+      },
+      "songgen_song": {
+        "descriptions": "male, surf rock, energetic, summer, guitar, upbeat, the bpm is 130, beach vibes",
+        "gt_lyric": "[intro-short] ; [verse] Riding on the ocean waves.Golden sun lights up the days.Salt and sand beneath my feet.Every wave a brand new beat ; [chorus] Ride the wave.Feel the rush inside your soul.Let the ocean take control.Summer days will never end.Catch the wave around the bend ; [inst-short] ; [verse] Wind is blowing through my hair.Freedom floating in the air.Nothing else but sea and sky.Spread my arms and learn to fly ; [chorus] Ride the wave.Feel the rush inside your soul.Let the ocean take control.Summer days will never end.Catch the wave around the bend ; [outro-short]",
+        "auto_prompt_audio_type": "Rock"
+      },
+      "cosyvoice_tts": {
+        "text_zh": "看那巨浪！他完美地驾驭住了这道三米高的海浪，在夕阳的金色光芒下，完成了一个令人惊叹的空中翻转！这简直是教科书级别的冲浪表演！",
+        "text_en": "Look at that wave! He perfectly rides this ten-foot swell, completing a breathtaking aerial flip under the golden glow of sunset! This is a textbook-perfect surfing performance!"
+      }
+    },
+    {
+      "id": "scene_08_live_action_sports",
+      "category": "真人运动 (Live Action Sports / Real Human Motion)",
+      "video_prompt": "A martial arts fighter performing an intense training montage, punching heavy bags, doing flips and kicks, sweat flying in slow motion under dramatic gym lighting.",
+      "tangoflux_sfx": {
+        "prompt": "Heavy boxing bag punching impacts, martial arts kicks whooshing through air, fast footwork on gym floor, heavy breathing and exertion grunts, chain swinging from ceiling bag, rhythmic punching sequence",
+        "duration": 20,
+        "steps": 50
+      },
+      "ace_step_bgm": {
+        "prompt": "hip hop, intense, motivational, heavy bass, trap drums, workout, training montage, 140 bpm, aggressive, powerful",
+        "lyrics": "[intro-short] ; [verse] Sweat is dripping on the floor, push it harder give me more. Every punch a step ahead, breaking limits in my head ; [chorus] Rise up! Never gonna back down now. Rise up! Show them what we're all about. Blood and sweat and tears of steel. This is how a champion feels ; [inst-short] ; [verse] Muscles burning through the pain, every loss becomes my gain. Shadow boxing in the dark, igniting that eternal spark ; [chorus] Rise up! Never gonna back down now. Rise up! Show them what we're all about. Blood and sweat and tears of steel. This is how a champion feels ; [outro-short]",
+        "duration": 180
+      },
+      "songgen_song": {
+        "descriptions": "male, hip hop, intense, heavy bass, trap, motivational, the bpm is 140, workout, aggressive",
+        "gt_lyric": "[intro-short] ; [verse] 汗水滴落在地板.再用力一点给我更多.每一拳都是向前一步.打破脑中所有界限 ; [chorus] 站起来.永不后退永不低头.站起来.让他们看看我们的力量.血与汗铸成钢铁.这就是冠军的感觉 ; [inst-short] ; [verse] 肌肉在疼痛中燃烧.每次失败都是我的收获.在黑暗中影子拳击.点燃那永恒的火花 ; [chorus] 站起来.永不后退永不低头.站起来.让他们看看我们的力量.血与汗铸成钢铁.这就是冠军的感觉 ; [outro-short]",
+        "auto_prompt_audio_type": "Hip-Hop"
+      },
+      "cosyvoice_tts": {
+        "text_zh": "不要停下来！再来一组！疼痛只是暂时的，但放弃是永远的。你每流下的一滴汗水，都在为你铸造冠军的盔甲！加油，坚持住！",
+        "text_en": "Don't stop now! One more set! Pain is temporary, but giving up lasts forever. Every drop of sweat you shed is forging your champion's armor! Come on, keep going!"
+      }
+    },
+    {
+      "id": "scene_09_live_action_sports",
+      "category": "真人运动 (Live Action Sports / Real Human Motion)",
+      "video_prompt": "A graceful ballet dancer performing on a grand theater stage, spotlight following her movements, flowing white costume creating elegant trails, pirouettes and arabesques captured in slow motion.",
+      "tangoflux_sfx": {
+        "prompt": "Ballet pointe shoes tapping on wooden stage floor, soft fabric rustling, spotlight buzzing, audience hushed breathing, gentle applause starting, theater stage ambience",
+        "duration": 30,
+        "steps": 50
+      },
+      "ace_step_bgm": {
+        "prompt": "classical ballet, elegant, piano and strings, graceful, romantic, waltz, 90 bpm, orchestral, beautiful, swan lake style, instrumental",
+        "lyrics": "[inst-long] ; [inst-long] ; [inst-long]",
+        "duration": 120
+      },
+      "songgen_song": {
+        "descriptions": "female, classical, elegant, piano and strings, romantic, waltz, ballet, orchestral",
+        "gt_lyric": "[inst-long] ; [inst-long] ; [inst-long]",
+        "auto_prompt_audio_type": "Soundtrack"
+      },
+      "cosyvoice_tts": {
+        "text_zh": "聚光灯下，她如同一只白天鹅般轻盈地旋转。每一个足尖的触地都恰到好处，每一次伸展都充满了力量与优雅。这不仅仅是舞蹈，这是灵魂在歌唱。",
+        "text_en": "Under the spotlight, she spins as gracefully as a white swan. Every pointe touch is perfectly placed, every extension filled with both strength and elegance. This is not merely dance — this is the soul singing."
+      }
+    },
+    {
+      "id": "scene_10_live_action_sports",
+      "category": "真人运动 (Live Action Sports / Real Human Motion)",
+      "video_prompt": "A group of friends playing basketball on an outdoor court at dusk, fast breaks and slam dunks, high-fives and celebrations, golden hour lighting creating long shadows.",
+      "tangoflux_sfx": {
+        "prompt": "Basketball bouncing on concrete court, sneakers squeaking on pavement, ball swishing through basketball net, players shouting and cheering, hand clapping high-five sounds, outdoor evening sports ambience",
+        "duration": 20,
+        "steps": 50
+      },
+      "ace_step_bgm": {
+        "prompt": "hip hop, fun, bouncy, basketball, summer, party, brass section, funky bass, 110 bpm, feel good, upbeat",
+        "lyrics": "[intro-short] ; [verse] Ball is bouncing on the ground, hear that sweet familiar sound. Running fast we hit the court, sunset fading life is short ; [chorus] Game on! Nothing's gonna stop us now. Game on! We play it loud and proud. Every shot we take tonight, underneath the fading light ; [inst-short] ; [verse] Cross it over break them down, nothing holds us to the ground. Flying high above the rim, giving everything within ; [chorus] Game on! Nothing's gonna stop us now. Game on! We play it loud and proud. Every shot we take tonight, underneath the fading light ; [outro-short]",
+        "duration": 180
+      },
+      "songgen_song": {
+        "descriptions": "male, hip hop, fun, bouncy, brass and funky bass, upbeat, the bpm is 110, summer, party",
+        "gt_lyric": "[intro-short] ; [verse] 篮球在地面弹跳.听那熟悉的声响.飞速奔跑冲向球场.日落时分生命短暂 ; [chorus] 开始了.没什么能阻挡我们.开始了.我们大声且骄傲.今夜每一次投篮.都在那渐落的光芒下 ; [inst-short] ; [verse] 交叉运球击败对手.没什么能让我们止步.飞跃篮筐之上.倾尽所有力量 ; [chorus] 开始了.没什么能阻挡我们.开始了.我们大声且骄傲.今夜每一次投篮.都在那渐落的光芒下 ; [outro-short]",
+        "auto_prompt_audio_type": "Hip-Hop"
+      },
+      "cosyvoice_tts": {
+        "text_zh": "好球！漂亮的突破！看他直接起飞扣篮了！哈哈，今天状态太好了！来，击掌！夕阳下的篮球场，这才是青春该有的样子！",
+        "text_en": "Nice play! Beautiful crossover! Look at him taking off for the dunk! Haha, he's on fire today! Come on, high five! Basketball courts at sunset, this is what youth is all about!"
+      }
+    }
+  ]
+}

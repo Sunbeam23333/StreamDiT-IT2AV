@@ -1,0 +1,431 @@
+diff --git a/inference/model/dit/dit_module.py b/inference/model/dit/dit_module.py
+index eda29f4..6fe200b 100644
+--- a/inference/model/dit/dit_module.py
++++ b/inference/model/dit/dit_module.py
+@@ -22,9 +22,29 @@ import torch.nn as nn
+ from einops import rearrange, repeat
+ from inference.common import Modality, VarlenHandler, is_hopper_arch
+ from inference.infra.parallelism import ulysses_scheduler
+-from magi_compiler import magi_compile
+-from magi_compiler.api import magi_register_custom_op
+-from magi_compiler.config import CompileConfig
++try:
++    from magi_compiler import magi_compile
++    from magi_compiler.api import magi_register_custom_op
++    from magi_compiler.config import CompileConfig
++except ImportError:
++    # magi_compiler 是 SandAI 内部编译优化库，缺失时用 no-op fallback
++    from dataclasses import dataclass, field
++
++    def magi_compile(cls=None, *, config_patch=None):
++        if cls is not None:
++            return cls
++        return lambda c: c
++
++    def magi_register_custom_op(name=None, *, mutates_args=None, infer_output_meta_fn=None, is_subgraph_boundary=False):
++        return lambda fn: fn
++
++    @dataclass
++    class _OffloadConfig:
++        gpu_resident_weight_ratio: float = 1.0
++
++    @dataclass
++    class CompileConfig:
++        offload_config: _OffloadConfig = field(default_factory=_OffloadConfig)
+ from torch import Tensor
+ from torch.nn import Parameter
+ 
+@@ -49,25 +69,65 @@ class MLPActivationType(Enum):
+ 
+ def swiglu7(x, alpha: float = 1.702, limit: float = 7.0, out_dtype: Optional[torch.dtype] = None):
+     out_dtype = x.dtype if out_dtype is None else out_dtype
+-    x = x.to(torch.float32)
+-    x_glu, x_linear = x[..., ::2], x[..., 1::2]
+-    # Clamp the input values
+-    x_glu = x_glu.clamp(min=None, max=limit)
+-    x_linear = x_linear.clamp(min=-limit, max=limit)
+-    out_glu = x_glu * torch.sigmoid(alpha * x_glu)
+-    # Note we add an extra bias of 1 to the linear layer (from GPT-OSS)
+-    return (out_glu * (x_linear + 1)).to(out_dtype)
++    # Chunked processing to limit peak fp32 memory for long sequences
++    CHUNK = 8192  # tokens per chunk, ~8K × 61440 × 4B ≈ 2 GB fp32 peak per chunk
++    N = x.shape[0]
++    if N <= CHUNK:
++        x = x.to(torch.float32)
++        x_glu, x_linear = x[..., ::2], x[..., 1::2]
++        x_glu = x_glu.clamp(min=None, max=limit)
++        x_linear = x_linear.clamp(min=-limit, max=limit)
++        out_glu = torch.sigmoid(x_glu.mul(alpha))
++        out_glu.mul_(x_glu)
++        del x_glu
++        x_linear.add_(1)
++        out_glu.mul_(x_linear)
++        del x_linear
++        return out_glu.to(out_dtype)
++    else:
++        # Process in chunks to avoid holding full-size fp32 intermediate
++        out_chunks = []
++        for start in range(0, N, CHUNK):
++            end = min(start + CHUNK, N)
++            xc = x[start:end].to(torch.float32)
++            xc_glu, xc_lin = xc[..., ::2], xc[..., 1::2]
++            xc_glu = xc_glu.clamp(min=None, max=limit)
++            xc_lin = xc_lin.clamp(min=-limit, max=limit)
++            sig = torch.sigmoid(xc_glu.mul(alpha))
++            sig.mul_(xc_glu)
++            del xc_glu
++            xc_lin.add_(1)
++            sig.mul_(xc_lin)
++            del xc_lin, xc
++            out_chunks.append(sig.to(out_dtype))
++            del sig
++        return torch.cat(out_chunks, dim=0)
+ 
+ 
+ def gelu7(x, alpha: float = 1.702, limit: float = 7.0, out_dtype: Optional[torch.dtype] = None):
+     out_dtype = x.dtype if out_dtype is None else out_dtype
+-    x = x.to(torch.float32)
+-    x_glu = x
+-    # Clamp the input values
+-    x_glu = x_glu.clamp(min=None, max=limit)
+-    out_glu = x_glu * torch.sigmoid(alpha * x_glu)
+-    # Note we add an extra bias of 1 to the linear layer
+-    return out_glu.to(out_dtype)
++    # Chunked processing to limit peak fp32 memory for long sequences
++    CHUNK = 8192
++    N = x.shape[0]
++    if N <= CHUNK:
++        x = x.to(torch.float32)
++        x.clamp_(min=None, max=limit)
++        sig = torch.sigmoid(x.mul(alpha))
++        x.mul_(sig)
++        del sig
++        return x.to(out_dtype)
++    else:
++        out_chunks = []
++        for start in range(0, N, CHUNK):
++            end = min(start + CHUNK, N)
++            xc = x[start:end].to(torch.float32)
++            xc.clamp_(min=None, max=limit)
++            sig = torch.sigmoid(xc.mul(alpha))
++            xc.mul_(sig)
++            del sig
++            out_chunks.append(xc.to(out_dtype))
++            del xc
++        return torch.cat(out_chunks, dim=0)
+ 
+ 
+ def create_activation_func(activation_type: MLPActivationType) -> Callable:
+@@ -515,7 +575,12 @@ def flash_attn_with_cp(q: torch.Tensor, k: torch.Tensor, v: torch.Tensor, cp_spl
+         k = k.unsqueeze(0)
+         v = v.unsqueeze(0)
+ 
+-    self_attn_out = torch.ops.infra.flash_attn_func(q, k, v).squeeze(0)
++    # 当 magi_compiler 未安装时, torch.ops.infra.flash_attn_func 不存在,
++    # 直接调用 Python 层的 flash_attn_func 函数作为 fallback
++    try:
++        self_attn_out = torch.ops.infra.flash_attn_func(q, k, v).squeeze(0)
++    except AttributeError:
++        self_attn_out = flash_attn_func(q, k, v).squeeze(0)
+ 
+     if get_cp_world_size() > 1:
+         self_attn_out = scatter_seqlen_gather_head(self_attn_out, cp_split_sizes, get_cp_group(), async_op=False)
+@@ -546,7 +611,12 @@ def flex_flash_attn_with_cp(
+     if get_cp_world_size() > 1:
+         q, k, v = batch_scatter_head_gather_seqlen([q, k, v], cp_split_sizes, get_cp_group())
+ 
+-    out, _ = torch.ops.infra.flex_flash_attn_func(q, k, v, q_ranges=q_ranges, k_ranges=k_ranges)
++    # 当 magi_compiler 未安装时, torch.ops.infra.flex_flash_attn_func 不存在,
++    # 直接调用 Python 层的 flex_flash_attn_func 函数作为 fallback
++    try:
++        out, _ = torch.ops.infra.flex_flash_attn_func(q, k, v, q_ranges=q_ranges, k_ranges=k_ranges)
++    except AttributeError:
++        out, _ = flex_flash_attn_func(q, k, v, q_ranges=q_ranges, k_ranges=k_ranges)
+ 
+     if get_cp_world_size() > 1:
+         out = scatter_seqlen_gather_head(out, cp_split_sizes, get_cp_group(), async_op=False)
+@@ -692,7 +762,9 @@ class MLP(torch.nn.Module):
+ 
+     def forward(self, x: torch.Tensor, modality_dispatcher: ModalityDispatcher) -> torch.Tensor:
+         x = self.pre_norm(x, modality_dispatcher=modality_dispatcher).to(torch.bfloat16)
+-        x = self.up_gate_proj(x, modality_dispatcher=modality_dispatcher).to(torch.float32)
++        x = self.up_gate_proj(x, modality_dispatcher=modality_dispatcher)
++        # NOTE: 不再在此处 .to(torch.float32)——activation_func 内部分块转 fp32
++        # 原因: 长视频（30s+）up_gate_proj 输出 [N, 61440] 全量 fp32 会占用 47+ GB 导致 OOM
+         x = self.activation_func(x).to(torch.bfloat16)
+         x = self.down_proj(x, modality_dispatcher=modality_dispatcher).to(torch.float32)
+         return x
+diff --git a/inference/model/sa_audio/sa_audio_model.py b/inference/model/sa_audio/sa_audio_model.py
+index 47f070c..3baed0d 100644
+--- a/inference/model/sa_audio/sa_audio_model.py
++++ b/inference/model/sa_audio/sa_audio_model.py
+@@ -103,7 +103,16 @@ class SAAudioFeatureExtractor:
+                     "Failed to load VAE-only Stable Audio model from local path"
+                 ) from e
+         else:
+-            print_rank_0("Non-local path is not supported in audio model loading")
++            print_rank_0(f"Non-local path is not supported in audio model loading")
++            print_rank_0(f"  audio_model_path = {model_path}")
++            print_rank_0(f"  type = {type(model_path)}")
++            print_rank_0(f"  Path(model_path).exists() = {Path(model_path).exists() if isinstance(model_path, str) else 'N/A'}")
++            print_rank_0(f"  Path(model_path).is_dir()  = {Path(model_path).is_dir() if isinstance(model_path, str) else 'N/A'}")
++            raise FileNotFoundError(
++                f"Audio model path is not a valid local directory: {model_path}\n"
++                f"Please download 'stabilityai/stable-audio-open-1.0' to this path first.\n"
++                f"Required files: model_config.json, model.safetensors"
++            )
+ 
+     def decode(self, latents):
+         with torch.no_grad():
+diff --git a/inference/model/turbo_vaed/turbo_vaed_module.py b/inference/model/turbo_vaed/turbo_vaed_module.py
+index 78601ea..395a998 100644
+--- a/inference/model/turbo_vaed/turbo_vaed_module.py
++++ b/inference/model/turbo_vaed/turbo_vaed_module.py
+@@ -991,49 +991,105 @@ class TurboVAED(ModelMixin, ConfigMixin):
+             num_frames = num_frames + num_padding_frames
+ 
+         # 2. Decode with overlapping windows
+-        # Collect chunks on CPU to avoid GPU OOM for high resolution (e.g., 1080P) when output_offload=True
+-        out_chunks = []
+-
+-        if num_frames == first_chunk_size:
+-            # if only one chunk, decode directly
+-            out = self.decoder(z, is_first_chunk=True)
+-            out_chunks.append(out.cpu() if output_offload else out)
+-            del out
++        # output_offload=True: 预分配 CPU output tensor，逐 chunk 写入，避免 out_chunks + cat 双倍峰值
++        # output_offload=False: 原有 list + cat 方式（在 GPU 上，内存不是瓶颈）
++        B, _, _, H_lat, W_lat = z.shape
++        pixel_H = H_lat * self.spatial_compression_ratio
++        pixel_W = W_lat * self.spatial_compression_ratio
++
++        if output_offload:
++            # 预计算总输出 pixel 帧数，直接分配完整 CPU tensor
++            # 每个 latent 帧对应 temporal_compression_ratio 个 pixel 帧
++            # 有效 pixel 帧 = (num_frames - padding) * temporal_compression_ratio
++            # 这里用 num_frames（含 padding）先分配，最后 slice 掉
++            total_pixel_frames = num_frames * self.temporal_compression_ratio
++            out = torch.empty(
++                B, 3, total_pixel_frames, pixel_H, pixel_W,
++                dtype=z_dtype, device=torch.device("cpu")
++            )
++            write_offset = 0  # 当前写入位置（pixel 帧维度）
++
++            if num_frames == first_chunk_size:
++                chunk_out = self.decoder(z, is_first_chunk=True)
++                frames = chunk_out.shape[2]
++                out[:, :, write_offset:write_offset + frames] = chunk_out.cpu()
++                write_offset += frames
++                del chunk_out
++            else:
++                # first chunk
++                chunk_out = self.decoder(z[:, :, 0:first_chunk_size + 1, :, :], is_first_chunk=True)
++                chunk_out = chunk_out[:, :, :-num_overlap_pixel_frames]
++                frames = chunk_out.shape[2]
++                out[:, :, write_offset:write_offset + frames] = chunk_out.cpu()
++                write_offset += frames
++                del chunk_out
++
++                for i in range(first_chunk_size, num_frames, step):
++                    is_last_chunk = i + step == num_frames
++                    left = i - 1
++                    right = i + step + 1 if not is_last_chunk else i + step
++
++                    assert left >= 0 and right <= num_frames, f"left: {left}, right: {right}, num_frames: {num_frames}"
++
++                    chunk_out = self.decoder(z[:, :, left:right, :, :], is_first_chunk=False)
++                    if is_last_chunk:
++                        chunk_out = chunk_out[:, :, num_overlap_pixel_frames:]
++                    else:
++                        chunk_out = chunk_out[:, :, num_overlap_pixel_frames:-num_overlap_pixel_frames]
++
++                    frames = chunk_out.shape[2]
++                    out[:, :, write_offset:write_offset + frames] = chunk_out.cpu()
++                    write_offset += frames
++                    del chunk_out
++
++            # 裁掉 padding 帧
++            if num_padding_frames > 0:
++                out = out[:, :, :write_offset - num_padding_frames * self.temporal_compression_ratio]
++            else:
++                out = out[:, :, :write_offset]
++
++            # output_offload 模式：直接返回 CPU tensor，不搬回 GPU
++            # 上层 decode_video 在 CPU 上完成归一化和 numpy 转换
++            return out
++
+         else:
+-            # first chunk: attach the right frame
+-            out = self.decoder(z[:, :, 0 : first_chunk_size + 1, :, :], is_first_chunk=True)
+-            out = out[:, :, :-num_overlap_pixel_frames]
+-            out_chunks.append(out.cpu() if output_offload else out)
+-            del out
++            # 原有逻辑：GPU 上 list + cat
++            out_chunks = []
+ 
+-            # middle chunk: attach the left and right frames
+-            # last chunk: attach the left frame
+-            for i in range(first_chunk_size, num_frames, step):
+-                is_last_chunk = i + step == num_frames
+-                left = i - 1
+-                right = i + step + 1 if not is_last_chunk else i + step
++            if num_frames == first_chunk_size:
++                out_chunk = self.decoder(z, is_first_chunk=True)
++                out_chunks.append(out_chunk)
++                del out_chunk
++            else:
++                out_chunk = self.decoder(z[:, :, 0:first_chunk_size + 1, :, :], is_first_chunk=True)
++                out_chunk = out_chunk[:, :, :-num_overlap_pixel_frames]
++                out_chunks.append(out_chunk)
++                del out_chunk
+ 
+-                assert left >= 0 and right <= num_frames, f"left: {left}, right: {right}, num_frames: {num_frames}"
++                for i in range(first_chunk_size, num_frames, step):
++                    is_last_chunk = i + step == num_frames
++                    left = i - 1
++                    right = i + step + 1 if not is_last_chunk else i + step
+ 
+-                out_ = self.decoder(z[:, :, left:right, :, :], is_first_chunk=False)
++                    assert left >= 0 and right <= num_frames, f"left: {left}, right: {right}, num_frames: {num_frames}"
+ 
+-                if is_last_chunk:
+-                    out_ = out_[:, :, num_overlap_pixel_frames:]
+-                else:
+-                    out_ = out_[:, :, num_overlap_pixel_frames:-num_overlap_pixel_frames]
++                    out_chunk = self.decoder(z[:, :, left:right, :, :], is_first_chunk=False)
++                    if is_last_chunk:
++                        out_chunk = out_chunk[:, :, num_overlap_pixel_frames:]
++                    else:
++                        out_chunk = out_chunk[:, :, num_overlap_pixel_frames:-num_overlap_pixel_frames]
+ 
+-                out_chunks.append(out_.cpu() if output_offload else out_)
+-                del out_
++                    out_chunks.append(out_chunk)
++                    del out_chunk
+ 
+-        # Concatenate chunks (on CPU if output_offload, otherwise on GPU)
+-        out = torch.cat(out_chunks, dim=2)
+-        del out_chunks
++            out = torch.cat(out_chunks, dim=2)
++            del out_chunks
+ 
+-        # 3. Remove padded frames
+-        if num_padding_frames > 0:
+-            out = out[:, :, : -num_padding_frames * self.temporal_compression_ratio]
++            # 3. Remove padded frames
++            if num_padding_frames > 0:
++                out = out[:, :, : -num_padding_frames * self.temporal_compression_ratio]
+ 
+-        return out.to(z_device) if output_offload else out
++            return out
+ 
+     def decode(self, z: torch.Tensor, output_offload: bool = False):
+         return self._sliding_window_decode(z, output_offload=output_offload)
+diff --git a/inference/pipeline/video_generate.py b/inference/pipeline/video_generate.py
+index d9adac3..b65a104 100644
+--- a/inference/pipeline/video_generate.py
++++ b/inference/pipeline/video_generate.py
+@@ -309,6 +309,15 @@ class MagiEvaluator:
+         )
+         if env_is_true("CPU_OFFLOAD") and env_is_true("SR2_1080"):
+             self.model = self.model.to(torch.device("cpu"))
++            # base DiT 推理后也强制释放 reserved 碎片
++            # 日志显示: Before SR eval reserved=55.93GB, allocated=3.3GB
++            # 60s 视频 SR 推理激活量巨大（token数~36x于5s），必须在 SR 开始前清干净
++            import gc
++            gc.collect()
++            torch.cuda.synchronize()
++            torch.cuda.empty_cache()
++            gc.collect()
++            torch.cuda.empty_cache()
+ 
+         if sr_width is not None and sr_height is not None and self.sr_model is not None:
+             event_path_timer().synced_record("Step4: Encode Image for Super Resolution")
+@@ -349,6 +358,15 @@ class MagiEvaluator:
+             )
+             if env_is_true("CPU_OFFLOAD") and env_is_true("SR2_1080"):
+                 self.sr_model = self.sr_model.to(torch.device("cpu"))
++                # 强制释放碎片化的 reserved 显存，防止 decode 阶段 OOM
++                # 背景: 两个 28.54GB 模型推理后 reserved 可达 57GB，尽管 allocated 仅 ~2GB
++                # empty_cache() 单独调用不够彻底，需要先 gc.collect() + synchronize()
++                import gc
++                gc.collect()
++                torch.cuda.synchronize()
++                torch.cuda.empty_cache()
++                gc.collect()
++                torch.cuda.empty_cache()
+         else:
+             latent_video = br_latent_video
+             latent_audio = br_latent_audio
+diff --git a/magi_compiler/__init__.py b/magi_compiler/__init__.py
+new file mode 100644
+index 0000000..2e0bc3c
+--- /dev/null
++++ b/magi_compiler/__init__.py
+@@ -0,0 +1,18 @@
++"""
++magi_compiler shim — 当 magi_compiler 未安装时提供 no-op fallback。
++
++magi_compiler 是 SandAI 内部的编译优化库 (类似 torch.compile)，
++用于 DiT 模型的推理加速。缺失时本 shim 保证代码可正常运行，
++但不会获得编译加速。
++"""
++
++
++def magi_compile(cls=None, *, config_patch=None):
++    """No-op decorator that returns the original class/function unchanged."""
++    if cls is not None:
++        return cls
++
++    def wrapper(cls_inner):
++        return cls_inner
++
++    return wrapper
+diff --git a/magi_compiler/api.py b/magi_compiler/api.py
+new file mode 100644
+index 0000000..3f02a79
+--- /dev/null
++++ b/magi_compiler/api.py
+@@ -0,0 +1,21 @@
++"""
++magi_compiler.api shim — no-op fallback for magi_register_custom_op.
++"""
++
++
++def magi_register_custom_op(
++    name=None,
++    *,
++    mutates_args=None,
++    infer_output_meta_fn=None,
++    is_subgraph_boundary=False,
++):
++    """No-op decorator that returns the original function unchanged.
++
++    The real magi_register_custom_op registers functions as torch custom ops
++    for graph compilation. Without the compiler, we just use them as-is.
++    """
++    def wrapper(fn):
++        return fn
++
++    return wrapper
+diff --git a/magi_compiler/config.py b/magi_compiler/config.py
+new file mode 100644
+index 0000000..16bf1c2
+--- /dev/null
++++ b/magi_compiler/config.py
+@@ -0,0 +1,15 @@
++"""
++magi_compiler.config shim — stub for CompileConfig.
++"""
++from dataclasses import dataclass, field
++
++
++@dataclass
++class OffloadConfig:
++    gpu_resident_weight_ratio: float = 1.0
++
++
++@dataclass
++class CompileConfig:
++    """Stub compile config — mirrors the fields used in dit_module.py."""
++    offload_config: OffloadConfig = field(default_factory=OffloadConfig)

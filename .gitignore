@@ -1,0 +1,50 @@
+# ---------------------------------------------------------------------------
+# Third-party frameworks fetched by third_party/fetch_third_party.sh
+# (pinned upstream commits + third_party/patches/*.patch, never committed)
+# ---------------------------------------------------------------------------
+utils/audio/ACE-Step/
+utils/audio/ChatTTS/
+utils/audio/CosyVoice/
+utils/audio/F5-TTS/
+utils/audio/Matcha-TTS/
+utils/audio/Spark-TTS/
+utils/audio/TangoFlux/
+utils/audio/fish-speech/
+utils/video/HunyuanVideo-1.5/
+utils/video/LatentSync/
+utils/video/LiveAvatar/
+utils/video/daVinci-MagiHuman/
+utils/video/LightX2V-main/
+utils/video/MagiCompiler/
+utils/image/diffusers/
+utils/image/xDiT/
+
+# SongGeneration is vendored (upstream repo is offline); its runtime assets are symlinked in
+utils/audio/SongGeneration/ckpt
+utils/audio/SongGeneration/third_party
+utils/audio/SongGeneration/tools/new_auto_prompt.pt.downloading
+
+# ---------------------------------------------------------------------------
+# Secrets / local config
+# ---------------------------------------------------------------------------
+.env
+*.env.local
+
+# ---------------------------------------------------------------------------
+# Weights, outputs, caches
+# ---------------------------------------------------------------------------
+workspace/
+outputs/
+results/
+*.safetensors
+*.ckpt
+*.pth
+*.onnx
+*.log
+__pycache__/
+*.pyc
+*.egg-info/
+.ipynb_checkpoints/
+.DS_Store
+.idea/
+.vscode/

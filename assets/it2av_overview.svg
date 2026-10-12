@@ -1,0 +1,164 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 560" width="1280" height="560" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#5b6472"/>
+    </marker>
+    <marker id="arrowA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#0f9d8a"/>
+    </marker>
+    <linearGradient id="gAudio" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#e6f7f3"/><stop offset="1" stop-color="#d3f0ea"/>
+    </linearGradient>
+    <linearGradient id="gVisual" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#eef1fd"/><stop offset="1" stop-color="#e0e6fb"/>
+    </linearGradient>
+    <linearGradient id="gAgent" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fff4e5"/><stop offset="1" stop-color="#ffe8c7"/>
+    </linearGradient>
+    <linearGradient id="gOut" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f6effc"/><stop offset="1" stop-color="#ead9f8"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="1.5" stdDeviation="2" flood-color="#1f2937" flood-opacity="0.12"/>
+    </filter>
+  </defs>
+
+  <rect width="1280" height="560" rx="18" fill="#ffffff"/>
+
+  <!-- ============ Inputs ============ -->
+  <text x="130" y="128" text-anchor="middle" font-size="12" font-weight="700" fill="#6b7280" letter-spacing="1.5">INPUT</text>
+  <g filter="url(#shadow)">
+    <rect x="30" y="145" width="200" height="96" rx="12" fill="#ffffff" stroke="#cbd2dc"/>
+    <rect x="30" y="299" width="200" height="96" rx="12" fill="#ffffff" stroke="#cbd2dc"/>
+  </g>
+  <rect x="46" y="163" width="36" height="28" rx="5" fill="#dbe4ff"/>
+  <path d="M50 186 L60 175 L67 182 L72 177 L78 186 Z" fill="#4c6ef5"/>
+  <circle cx="73" cy="170" r="3" fill="#4c6ef5"/>
+  <text x="92" y="182" font-size="16" font-weight="700" fill="#111827">Image</text>
+  <text x="46" y="214" font-size="12" fill="#4b5563">portrait &#183; first frame</text>
+  <text x="46" y="230" font-size="12" fill="#4b5563">product / scene still</text>
+  <rect x="46" y="317" width="36" height="28" rx="5" fill="#fde7c7"/>
+  <rect x="52" y="324" width="24" height="3" rx="1.5" fill="#e8590c"/>
+  <rect x="52" y="330" width="18" height="3" rx="1.5" fill="#e8590c"/>
+  <rect x="52" y="336" width="22" height="3" rx="1.5" fill="#e8590c"/>
+  <text x="92" y="336" font-size="16" font-weight="700" fill="#111827">Text</text>
+  <text x="46" y="368" font-size="12" fill="#4b5563">script &#183; dialogue lines</text>
+  <text x="46" y="384" font-size="12" fill="#4b5563">mood &#183; music / SFX cues</text>
+
+  <!-- ============ Agent planner ============ -->
+  <text x="370" y="128" text-anchor="middle" font-size="12" font-weight="700" fill="#6b7280" letter-spacing="1.5">PLAN</text>
+  <g filter="url(#shadow)">
+    <rect x="270" y="170" width="200" height="200" rx="14" fill="url(#gAgent)" stroke="#f0a64b"/>
+  </g>
+  <text x="370" y="204" text-anchor="middle" font-size="16" font-weight="700" fill="#7c3d00">Agent planner</text>
+  <text x="370" y="224" text-anchor="middle" font-size="11.5" fill="#9a5b13">utils/tools/agent_video_pipeline</text>
+  <g font-size="12.5" fill="#5c3b12">
+    <text x="292" y="256">&#8226; LLM shot list &amp; audio plan</text>
+    <text x="292" y="280">&#8226; scenario routes</text>
+    <text x="292" y="304">&#8226; start / end-frame logic</text>
+    <text x="292" y="328">&#8226; VLM review &amp; retry</text>
+    <text x="292" y="352">&#8226; or fixed shell pipelines</text>
+  </g>
+
+  <!-- ============ Audio lane ============ -->
+  <rect x="510" y="40" width="500" height="228" rx="16" fill="url(#gAudio)" stroke="#8fd3c5"/>
+  <text x="530" y="66" font-size="12" font-weight="700" fill="#0b7a6b" letter-spacing="1.5">AUDIO</text>
+  <text x="590" y="66" font-size="12" fill="#0b7a6b">&#183; TTS / SFX / BGM / song &#8212; focus of this repo</text>
+  <g filter="url(#shadow)">
+    <rect x="520" y="82" width="111" height="172" rx="11" fill="#ffffff" stroke="#7fcab9"/>
+    <rect x="643" y="82" width="111" height="172" rx="11" fill="#ffffff" stroke="#7fcab9"/>
+    <rect x="766" y="82" width="111" height="172" rx="11" fill="#ffffff" stroke="#7fcab9"/>
+    <rect x="889" y="82" width="111" height="172" rx="11" fill="#ffffff" stroke="#7fcab9"/>
+  </g>
+  <g text-anchor="middle">
+    <text x="575.5" y="108" font-size="16" font-weight="700" fill="#065f53">TTS</text>
+    <text x="575.5" y="132" font-size="11.5" fill="#374151">CosyVoice 2 / 3</text>
+    <text x="575.5" y="150" font-size="11.5" fill="#374151">Spark-TTS</text>
+    <text x="575.5" y="168" font-size="11.5" fill="#374151">F5-TTS &#183; ChatTTS</text>
+    <text x="575.5" y="186" font-size="11.5" fill="#374151">Fish-Speech S2</text>
+    <text x="575.5" y="204" font-size="11.5" fill="#374151">Hunyuan TTS API</text>
+    <text x="575.5" y="236" font-size="10.5" fill="#0f9d8a">16 &#8211; 24 kHz speech</text>
+
+    <text x="698.5" y="108" font-size="16" font-weight="700" fill="#065f53">SFX</text>
+    <text x="698.5" y="132" font-size="11.5" fill="#374151">TangoFlux</text>
+    <text x="698.5" y="150" font-size="11.5" fill="#374151">flow matching</text>
+    <text x="698.5" y="168" font-size="11.5" fill="#374151">+ CRPO</text>
+    <text x="698.5" y="186" font-size="11.5" fill="#374151">English prompts</text>
+    <text x="698.5" y="236" font-size="10.5" fill="#0f9d8a">44.1 kHz &#183; &#8804; 30 s</text>
+
+    <text x="821.5" y="108" font-size="16" font-weight="700" fill="#065f53">BGM</text>
+    <text x="821.5" y="132" font-size="11.5" fill="#374151">ACE-Step v1</text>
+    <text x="821.5" y="150" font-size="11.5" fill="#374151">3.5B &#183; DCAE</text>
+    <text x="821.5" y="168" font-size="11.5" fill="#374151">tags + [inst-long]</text>
+    <text x="821.5" y="186" font-size="11.5" fill="#374151">APG guidance</text>
+    <text x="821.5" y="236" font-size="10.5" fill="#0f9d8a">48 kHz &#183; &#8804; 240 s</text>
+
+    <text x="944.5" y="108" font-size="16" font-weight="700" fill="#065f53">Song</text>
+    <text x="944.5" y="132" font-size="11.5" fill="#374151">SongGeneration</text>
+    <text x="944.5" y="150" font-size="11.5" fill="#374151">v2-large (LeVo)</text>
+    <text x="944.5" y="168" font-size="11.5" fill="#374151">vocals + accomp.</text>
+    <text x="944.5" y="186" font-size="11.5" fill="#374151">structured lyrics</text>
+    <text x="944.5" y="236" font-size="10.5" fill="#0f9d8a">48 kHz &#183; &#8804; 4.5 min</text>
+  </g>
+
+  <!-- ============ Visual lane ============ -->
+  <rect x="510" y="300" width="500" height="228" rx="16" fill="url(#gVisual)" stroke="#a9b8f2"/>
+  <text x="530" y="326" font-size="12" font-weight="700" fill="#3949ab" letter-spacing="1.5">VISUAL</text>
+  <text x="600" y="326" font-size="12" fill="#3949ab">&#183; first frame &#8594; motion &#8594; talking human</text>
+  <g filter="url(#shadow)">
+    <rect x="520" y="342" width="152" height="172" rx="11" fill="#ffffff" stroke="#9aaaf0"/>
+    <rect x="684" y="342" width="152" height="172" rx="11" fill="#ffffff" stroke="#9aaaf0"/>
+    <rect x="848" y="342" width="152" height="172" rx="11" fill="#ffffff" stroke="#9aaaf0"/>
+  </g>
+  <g text-anchor="middle">
+    <text x="596" y="368" font-size="16" font-weight="700" fill="#283593">First frame</text>
+    <text x="596" y="392" font-size="11.5" fill="#374151">HunyuanImage 3.0</text>
+    <text x="596" y="410" font-size="11.5" fill="#374151">FLUX.1 &#183; SD 3.5</text>
+    <text x="596" y="428" font-size="11.5" fill="#374151">Nano-Banana Pro</text>
+    <text x="596" y="446" font-size="11.5" fill="#374151">diffusers &#183; xDiT</text>
+    <text x="596" y="496" font-size="10.5" fill="#4c6ef5">text &#8594; image</text>
+
+    <text x="760" y="368" font-size="16" font-weight="700" fill="#283593">Image &#8594; Video</text>
+    <text x="760" y="392" font-size="11.5" fill="#374151">HunyuanVideo-1.5</text>
+    <text x="760" y="410" font-size="11.5" fill="#374151">720p &#8594; SR 1080p</text>
+    <text x="760" y="428" font-size="11.5" fill="#374151">Wan 2.2 (LightX2V)</text>
+    <text x="760" y="446" font-size="11.5" fill="#374151">FLF2V &#183; Veo 3 API</text>
+    <text x="760" y="496" font-size="10.5" fill="#4c6ef5">I2V &#183; first/last frame</text>
+
+    <text x="924" y="368" font-size="16" font-weight="700" fill="#283593">Talking human</text>
+    <text x="924" y="392" font-size="11.5" fill="#374151">LatentSync 1.6</text>
+    <text x="924" y="410" font-size="11.5" fill="#374151">LiveAvatar (S2V)</text>
+    <text x="924" y="428" font-size="11.5" fill="#374151">daVinci-MagiHuman</text>
+    <text x="924" y="446" font-size="11.5" fill="#374151">joint audio-video</text>
+    <text x="924" y="496" font-size="10.5" fill="#4c6ef5">audio-driven lips</text>
+  </g>
+
+  <!-- ============ Compose ============ -->
+  <text x="1150" y="128" text-anchor="middle" font-size="12" font-weight="700" fill="#6b7280" letter-spacing="1.5">COMPOSE</text>
+  <g filter="url(#shadow)">
+    <rect x="1050" y="150" width="200" height="240" rx="14" fill="url(#gOut)" stroke="#c39be6"/>
+  </g>
+  <text x="1150" y="182" text-anchor="middle" font-size="16" font-weight="700" fill="#5b21b6">FFmpeg mix</text>
+  <g font-size="12" fill="#4c1d95">
+    <text x="1068" y="214">&#8226; retime: setpts &#8594; 25 fps</text>
+    <text x="1068" y="238">&#8226; lip-sync on TTS track</text>
+    <text x="1068" y="262">&#8226; atrim BGM / SFX to TTS</text>
+    <text x="1068" y="286">&#8226; amix: TTS 1.0</text>
+    <text x="1121" y="304">BGM 0.15 &#183; SFX 0.2</text>
+  </g>
+  <rect x="1080" y="326" width="140" height="44" rx="22" fill="#7c3aed"/>
+  <text x="1150" y="354" text-anchor="middle" font-size="15" font-weight="700" fill="#ffffff">final.mp4</text>
+
+  <!-- ============ Arrows ============ -->
+  <path d="M230 193 C 250 193, 250 240, 268 248" fill="none" stroke="#5b6472" stroke-width="2" marker-end="url(#arrow)"/>
+  <path d="M230 347 C 250 347, 250 300, 268 292" fill="none" stroke="#5b6472" stroke-width="2" marker-end="url(#arrow)"/>
+  <path d="M470 230 C 490 230, 490 154, 508 154" fill="none" stroke="#5b6472" stroke-width="2" marker-end="url(#arrow)"/>
+  <path d="M470 310 C 490 310, 490 414, 508 414" fill="none" stroke="#5b6472" stroke-width="2" marker-end="url(#arrow)"/>
+  <path d="M1010 154 C 1030 154, 1030 210, 1048 215" fill="none" stroke="#5b6472" stroke-width="2" marker-end="url(#arrow)"/>
+  <path d="M1010 414 C 1030 414, 1030 330, 1048 325" fill="none" stroke="#5b6472" stroke-width="2" marker-end="url(#arrow)"/>
+  <path d="M575 254 L575 276 Q575 284 583 284 L916 284 Q924 284 924 292 L924 340" fill="none" stroke="#0f9d8a" stroke-width="2" stroke-dasharray="6 5" marker-end="url(#arrowA)"/>
+  <rect x="676" y="275" width="148" height="18" rx="9" fill="#ffffff" stroke="#8fd3c5"/>
+  <text x="750" y="288" text-anchor="middle" font-size="11" font-weight="600" fill="#0f9d8a">speech drives lip-sync</text>
+
+  <text x="640" y="550" text-anchor="middle" font-size="11.5" fill="#9ca3af">StreamDiT-IT2AV &#183; image + text &#8594; synchronized audio + video</text>
+</svg>

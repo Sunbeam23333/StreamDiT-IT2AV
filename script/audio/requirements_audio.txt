@@ -1,0 +1,159 @@
+# ============================================================================
+# Audio Generation 统一环境依赖
+#
+# 整合以下模型框架的依赖:
+#   - TangoFlux          (文生音效, 515M)
+#   - ACE-Step v1        (文生BGM, 3.5B)
+#   - SongGeneration v2  (歌曲生成, 4B)
+#   - CosyVoice3         (语音合成, 0.5B)
+#
+# 安装:
+#   pip install -r requirements_audio.txt --no-deps 的方式不推荐
+#   推荐:
+#     pip install -r requirements_audio.txt
+#     pip install descript-audio-codec --no-deps       # SongGeneration 必需, 必须 --no-deps
+#     pip install onnxruntime-gpu==1.20.1 --no-deps   # CosyVoice 必需, 必须 --no-deps (1.18.0 与 numpy 2.x 不兼容)
+#
+# 建议环境:
+#   conda create -n audio_gen python=3.12
+#   conda activate audio_gen
+#   pip install torch torchaudio torchvision --index-url https://download.pytorch.org/whl/cu128
+#   pip install -r requirements_audio.txt
+#
+# 注意:
+#   1. SongGeneration 可能需要额外的 flash-attn 安装:
+#      pip install flash-attn --no-build-isolation
+#   2. CosyVoice 需要额外的 onnxruntime-gpu:
+#      pip install onnxruntime-gpu==1.20.1 --no-deps
+#   3. 如果有版本冲突, 可分环境安装:
+#      - env_tangoflux: TangoFlux (最轻量, 依赖最少)
+#      - env_ace_step:  ACE-Step (需要 diffusers>=0.33.0)
+#      - env_songgen:   SongGeneration (需要 diffusers==0.27.2)
+#      - env_cosyvoice: CosyVoice (需要 deepspeed, onnxruntime)
+# ============================================================================
+
+# --------------------------------------------------------------------------
+# 核心 PyTorch (需先通过 conda/pip 安装匹配 CUDA 版本的 torch)
+# --------------------------------------------------------------------------
+# torch==2.4.0
+# torchaudio==2.4.0
+# torchvision==0.19.0
+
+# --------------------------------------------------------------------------
+# HuggingFace 生态
+# --------------------------------------------------------------------------
+transformers==4.57.1
+diffusers>=0.33.0,<1
+accelerate>=0.34.2,<2
+datasets>=2.21.0,<4
+huggingface_hub>=0.25.0,<1
+safetensors>=0.4.0,<1
+peft>=0.17.0,<1                  # diffusers>=0.33.0 要求 peft>=0.17.0
+
+# --------------------------------------------------------------------------
+# 音频处理
+# --------------------------------------------------------------------------
+librosa>=0.10.2,<1
+soundfile>=0.12.1,<1
+torchaudio
+torchlibrosa>=0.1.0,<1
+julius>=0.2.7,<1
+lameenc>=1.8.1,<2
+
+# --------------------------------------------------------------------------
+# 通用科学计算
+# --------------------------------------------------------------------------
+numpy>=2.0.0                    # 锁定 2.x, 不回退到 1.26
+scipy>=1.14.0                   # 锁定下界, >=1.14 才有 cp312 预编译 wheel
+einops>=0.8.1,<1
+einops-exts>=0.0.4,<1
+
+# --------------------------------------------------------------------------
+# TangoFlux 专用
+# --------------------------------------------------------------------------
+# (大部分已被上面覆盖)
+
+# --------------------------------------------------------------------------
+# ACE-Step 专用
+# --------------------------------------------------------------------------
+loguru>=0.7.3,<1
+pypinyin>=0.53.0,<1
+pytorch_lightning>=2.5.1,<2.7
+py3langid>=0.3.0,<1
+hangul-romanize>=0.1.0,<1
+num2words>=0.5.14,<1
+spacy>=3.8.0,<3.9
+cutlet>=0.4
+fugashi[unidic-lite]>=1.4.0    # >=1.4.0 有预编译 wheel, <1.4 需要系统 MeCab 会报错
+click>=8.1.0,<9                 # 锁定上界避免回溯
+tensorboard>=2.18.0,<2.21    # 锁定上界, 避免 pip backtracking 爆炸
+tensorboardX>=2.6,<2.7       # 同上
+
+# --------------------------------------------------------------------------
+# SongGeneration 专用
+# --------------------------------------------------------------------------
+omegaconf>=2.3.0,<3
+alias-free-torch>=0.0.6,<1
+# descript-audio-codec>=1.0.0    # ⚠️ 移出统一安装! descript-audiotools 子依赖链
+#   (pyloudnorm/pystoi/torch-stoi/flatten-dict/randomname 等) 会触发 pip 回溯爆炸,
+#   最终把 numpy 降级到 1.26、scipy 降级到 1.11 (源码编译失败)
+#   安装方式: pip install descript-audio-codec --no-deps
+#   运行依赖 (torch/numpy/scipy/einops) 已在本文件中
+flashy>=0.0.2,<1
+# k-diffusion>=0.1.1,<1          # ⚠️ 移除! 四个音频模型均未使用 k-diffusion
+#   它的子依赖链 (clean-fid/clip-anytorch/dctorch/kornia/scikit-image/torchdiffeq/torchsde)
+#   触发 pip 疯狂回溯: clean-fid 20版本 + scikit-learn 退到 1.2.1 源码包
+#   → Python 3.12 下 setuptools 的 pkgutil.ImpImporter 已被移除 → 编译失败
+#   如果确实需要, 可单独: pip install k-diffusion --no-deps
+kaldiio>=2.18.1,<3
+nnAudio>=0.3.3,<1
+openunmix>=1.3.0,<2
+vector-quantize-pytorch>=1.22.17,<2
+x-transformers>=2.3.25,<3
+lightning>=2.2.4,<2.7
+ninja>=1.11.1,<2
+
+# --------------------------------------------------------------------------
+# CosyVoice 专用
+# --------------------------------------------------------------------------
+conformer>=0.3.2,<1
+hydra-core>=1.3.2,<2
+HyperPyYAML>=1.2.3,<2
+inflect>=7.3.1,<8
+modelscope>=1.20.0,<1.35
+networkx>=3.1,<4
+protobuf>=4.25,<6
+pyarrow>=18.1.0,<24
+pydantic>=2.7.4,<3              # >=2.7.4 修复 v1 兼容层 ForwardRef._evaluate() Python 3.12.4+
+rich>=1.0.0,<15
+wetext>=0.0.4,<1
+wget>=3.2,<4
+openai-whisper>=20250625  # CosyVoice frontend 依赖 whisper
+pyworld
+hyperpyyaml
+conformer
+lightning
+onnxruntime
+# onnxruntime-gpu                # ⚠️ 必须单独安装! 见下方注释
+# 安装方式: pip install onnxruntime-gpu==1.20.1 --no-deps
+# ⚠️ 版本选择说明:
+#   - 1.18.0: 编译时使用 numpy 1.x ABI, 运行时遇到 numpy 2.x 会报
+#     "AttributeError: _ARRAY_API not found" (pybind11 扩展加载失败)
+#   - 1.19.0+: 开始支持 numpy 2.x ABI
+#   - 1.20.1: 推荐版本, 支持 numpy 2.x + CUDA 12.x
+#   仍需 --no-deps 安装, 因为 onnxruntime-gpu 的 deps 约束可能触发 numpy 降级
+deepspeed>=0.15.1,<0.17      # 锁定上界避免回溯
+
+# --------------------------------------------------------------------------
+# Web/UI (可选, 用于 demo)
+# --------------------------------------------------------------------------
+gradio>=5.0.0,<7
+fastapi>=0.115.0,<1
+uvicorn>=0.30.0,<1
+
+# --------------------------------------------------------------------------
+# 工具
+# --------------------------------------------------------------------------
+tqdm
+wandb>=0.19.0,<0.20           # 锁定上界, 无界 wandb 是回溯爆炸的元凶
+matplotlib>=3.7.0,<4

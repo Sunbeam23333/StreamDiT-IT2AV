@@ -1,0 +1,209 @@
+{
+  "updated_at": "2026-03-20",
+  "default_benchmark_models": [
+    "cosyvoice2",
+    "spark_tts",
+    "chattts",
+    "f5tts"
+  ],
+  "experimental_models": [
+    "fish_speech"
+  ],
+  "notes": [
+    "CosyVoice3 当前已知有质量问题，默认 benchmark 建议使用 CosyVoice2。",
+    "Fish-Speech 当前 vendored 仓库是 S2 版本，项目内旧版 1.5 runner 已失配；建议走官方 API Server 或单独重写 runner。",
+    "F5-TTS 默认依赖参考音频；统一 benchmark 如未显式提供 ref_audio，会退回仓库内置示例音色。"
+  ],
+  "models": {
+    "cosyvoice2": {
+      "display_name": "CosyVoice2-0.5B",
+      "repo_dir": "utils/audio/CosyVoice",
+      "model_dir": "CosyVoice2-0.5B",
+      "conda_env": "current_or_it2av",
+      "benchmark_ready": true,
+      "sample_rate_hz": 24000,
+      "native_voice_support": {
+        "type": "sft_speakers",
+        "available": true,
+        "query_method": "cosyvoice.list_available_spks()",
+        "examples": [
+          "中文女",
+          "中文男"
+        ]
+      },
+      "supported_inputs": [
+        "text",
+        "sft speaker id",
+        "reference audio + prompt text (zero-shot)",
+        "reference audio only (cross-lingual)",
+        "instruct text + reference audio",
+        "voice conversion"
+      ],
+      "style_or_effect_controls": [
+        "language tags like <|zh|>, <|en|>",
+        "event tokens like [laughter], [breath]",
+        "speed"
+      ],
+      "benchmark_command": "python run_audio_benchmark.py --model cosyvoice --tts_engine cosyvoice2"
+    },
+    "cosyvoice3": {
+      "display_name": "Fun-CosyVoice3-0.5B",
+      "repo_dir": "utils/audio/CosyVoice",
+      "model_dir": "Fun-CosyVoice3-0.5B",
+      "conda_env": "current_or_it2av",
+      "benchmark_ready": true,
+      "recommended": false,
+      "sample_rate_hz": 24000,
+      "native_voice_support": {
+        "type": "zero_shot_and_instruct",
+        "available": true,
+        "query_method": "AutoModel + zero-shot / instruct2"
+      },
+      "supported_inputs": [
+        "text",
+        "reference audio + prompt text (zero-shot)",
+        "reference audio only (cross-lingual)",
+        "instruct text + reference audio"
+      ],
+      "style_or_effect_controls": [
+        "language tags",
+        "instruct prompt",
+        "text frontend resources"
+      ],
+      "warnings": [
+        "项目内默认不建议作为主 benchmark 模型，存在乱码/重复等已知质量问题。"
+      ],
+      "benchmark_command": "python run_audio_benchmark.py --model cosyvoice --tts_engine cosyvoice3"
+    },
+    "spark_tts": {
+      "display_name": "Spark-TTS-0.5B",
+      "repo_dir": "utils/audio/Spark-TTS",
+      "model_dir": "Spark-TTS-0.5B",
+      "conda_env": "spark_tts",
+      "benchmark_ready": true,
+      "sample_rate_hz": 16000,
+      "native_voice_support": {
+        "type": "virtual_speaker_controls",
+        "available": true,
+        "controls": [
+          "gender",
+          "pitch",
+          "speed"
+        ]
+      },
+      "supported_inputs": [
+        "text",
+        "reference audio + prompt text (voice cloning)",
+        "text + gender/pitch/speed (voice creation)"
+      ],
+      "style_or_effect_controls": [
+        "gender=female|male",
+        "pitch=very_low|low|moderate|high|very_high",
+        "speed=very_low|low|moderate|high|very_high"
+      ],
+      "benchmark_command": "python run_tts_benchmark.py --model spark_tts"
+    },
+    "chattts": {
+      "display_name": "ChatTTS",
+      "repo_dir": "utils/audio/ChatTTS",
+      "model_dir": "ChatTTS",
+      "conda_env": "chattts",
+      "benchmark_ready": true,
+      "sample_rate_hz": 24000,
+      "native_voice_support": {
+        "type": "random_speaker_embedding",
+        "available": true,
+        "controls": [
+          "sample_random_speaker()",
+          "seed-fixed speaker embedding"
+        ]
+      },
+      "supported_inputs": [
+        "text",
+        "speaker embedding",
+        "optional audio-derived speaker prompt"
+      ],
+      "style_or_effect_controls": [
+        "[speed_5]",
+        "[oral_2]",
+        "[laugh_0]",
+        "[break_4]",
+        "[uv_break]",
+        "[laugh]",
+        "[lbreak]"
+      ],
+      "benchmark_command": "python run_tts_benchmark.py --model chattts"
+    },
+    "f5tts": {
+      "display_name": "F5-TTS",
+      "repo_dir": "utils/audio/F5-TTS",
+      "model_dir": "F5-TTS",
+      "conda_env": "f5tts",
+      "benchmark_ready": true,
+      "sample_rate_hz": 24000,
+      "native_voice_support": {
+        "type": "reference_audio_driven",
+        "available": true,
+        "controls": [
+          "reference audio",
+          "reference transcript",
+          "multi-voice tags via TOML"
+        ]
+      },
+      "supported_inputs": [
+        "text",
+        "reference audio + reference text",
+        "TOML multi-style multi-speaker config"
+      ],
+      "style_or_effect_controls": [
+        "speed",
+        "nfe_step",
+        "cfg_strength",
+        "sway_sampling_coef",
+        "fix_duration",
+        "seed"
+      ],
+      "benchmark_command": "python run_tts_benchmark.py --model f5tts --ref_audio <wav> --ref_text <text>",
+      "benchmark_default_ref": {
+        "zh": "utils/audio/F5-TTS/src/f5_tts/infer/examples/basic/basic_ref_zh.wav",
+        "en": "utils/audio/F5-TTS/src/f5_tts/infer/examples/basic/basic_ref_en.wav"
+      }
+    },
+    "fish_speech": {
+      "display_name": "Fish-Speech S2",
+      "repo_dir": "utils/audio/fish-speech",
+      "model_dir": "Fish-Speech-1.5",
+      "conda_env": "fish_speech",
+      "benchmark_ready": false,
+      "recommended_runtime": "api_server_or_three_stage_cli",
+      "native_voice_support": {
+        "type": "reference_audio_or_random_timbre",
+        "available": true,
+        "controls": [
+          "reference audio + reference text",
+          "reference_id",
+          "random timbre without reference",
+          "speaker tokens"
+        ]
+      },
+      "supported_inputs": [
+        "text",
+        "reference audio + prompt text",
+        "reference_id",
+        "prompt token file (.npy)"
+      ],
+      "style_or_effect_controls": [
+        "temperature",
+        "top_p",
+        "repetition_penalty",
+        "streaming",
+        "chunk_length"
+      ],
+      "warnings": [
+        "当前 vendored repo 为 S2，项目里旧版 1.5 Python runner 已与实际目录和接口不一致。",
+        "官方建议至少 24GB 显存。"
+      ],
+      "benchmark_command": "python utils/audio/fish-speech/tools/api_server.py --listen 0.0.0.0:8080"
+    }
+  }
+}

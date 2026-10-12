@@ -1,0 +1,1805 @@
+diff --git a/configs/hunyuan_video_15/hunyuan_video_i2v_480p_h20_1gpu.json b/configs/hunyuan_video_15/hunyuan_video_i2v_480p_h20_1gpu.json
+new file mode 100644
+index 0000000..be33a35
+--- /dev/null
++++ b/configs/hunyuan_video_15/hunyuan_video_i2v_480p_h20_1gpu.json
+@@ -0,0 +1,13 @@
++{
++    "infer_steps": 50,
++    "transformer_model_name": "480p_i2v",
++    "fps": 24,
++    "target_video_length": 121,
++    "vae_stride": [4, 16, 16],
++    "sample_shift": 5.0,
++    "sample_guide_scale": 6.0,
++    "enable_cfg": true,
++    "attn_type": "sage_attn2",
++    "cpu_offload": true,
++    "offload_granularity": "model"
++}
+diff --git a/configs/hunyuan_video_15/hunyuan_video_i2v_480p_h20_8gpu.json b/configs/hunyuan_video_15/hunyuan_video_i2v_480p_h20_8gpu.json
+new file mode 100644
+index 0000000..8c19796
+--- /dev/null
++++ b/configs/hunyuan_video_15/hunyuan_video_i2v_480p_h20_8gpu.json
+@@ -0,0 +1,19 @@
++{
++    "infer_steps": 50,
++    "transformer_model_name": "480p_i2v",
++    "fps": 24,
++    "target_video_length": 121,
++    "vae_stride": [4, 16, 16],
++    "sample_shift": 5.0,
++    "sample_guide_scale": 6.0,
++    "enable_cfg": true,
++    "attn_type": "sage_attn2",
++    "cpu_offload": false,
++    "parallel": {
++        "cfg_parallel": 2,
++        "seq_parallel": {
++            "type": "ulysses",
++            "size": 4
++        }
++    }
++}
+diff --git a/configs/hunyuan_video_15/hunyuan_video_i2v_720p_h20_1gpu.json b/configs/hunyuan_video_15/hunyuan_video_i2v_720p_h20_1gpu.json
+new file mode 100644
+index 0000000..09da41f
+--- /dev/null
++++ b/configs/hunyuan_video_15/hunyuan_video_i2v_720p_h20_1gpu.json
+@@ -0,0 +1,13 @@
++{
++    "infer_steps": 50,
++    "transformer_model_name": "720p_i2v",
++    "fps": 24,
++    "target_video_length": 121,
++    "vae_stride": [4, 16, 16],
++    "sample_shift": 7.0,
++    "sample_guide_scale": 6.0,
++    "enable_cfg": true,
++    "attn_type": "sage_attn2",
++    "cpu_offload": true,
++    "offload_granularity": "model"
++}
+diff --git a/configs/hunyuan_video_15/hunyuan_video_i2v_720p_h20_8gpu.json b/configs/hunyuan_video_15/hunyuan_video_i2v_720p_h20_8gpu.json
+new file mode 100644
+index 0000000..1894614
+--- /dev/null
++++ b/configs/hunyuan_video_15/hunyuan_video_i2v_720p_h20_8gpu.json
+@@ -0,0 +1,19 @@
++{
++    "infer_steps": 50,
++    "transformer_model_name": "720p_i2v",
++    "fps": 24,
++    "target_video_length": 121,
++    "vae_stride": [4, 16, 16],
++    "sample_shift": 7.0,
++    "sample_guide_scale": 6.0,
++    "enable_cfg": true,
++    "attn_type": "sage_attn2",
++    "cpu_offload": false,
++    "parallel": {
++        "cfg_parallel": 2,
++        "seq_parallel": {
++            "type": "ulysses",
++            "size": 4
++        }
++    }
++}
+diff --git a/configs/hunyuan_video_15/hunyuan_video_t2v_480p_h20_1gpu.json b/configs/hunyuan_video_15/hunyuan_video_t2v_480p_h20_1gpu.json
+new file mode 100644
+index 0000000..9abfa6a
+--- /dev/null
++++ b/configs/hunyuan_video_15/hunyuan_video_t2v_480p_h20_1gpu.json
+@@ -0,0 +1,14 @@
++{
++    "infer_steps": 50,
++    "transformer_model_name": "480p_t2v",
++    "fps": 24,
++    "target_video_length": 121,
++    "aspect_ratio": "16:9",
++    "vae_stride": [4, 16, 16],
++    "sample_shift": 5.0,
++    "sample_guide_scale": 6.0,
++    "enable_cfg": true,
++    "attn_type": "sage_attn2",
++    "cpu_offload": true,
++    "offload_granularity": "model"
++}
+diff --git a/configs/hunyuan_video_15/hunyuan_video_t2v_480p_h20_8gpu.json b/configs/hunyuan_video_15/hunyuan_video_t2v_480p_h20_8gpu.json
+new file mode 100644
+index 0000000..f56ed71
+--- /dev/null
++++ b/configs/hunyuan_video_15/hunyuan_video_t2v_480p_h20_8gpu.json
+@@ -0,0 +1,20 @@
++{
++    "infer_steps": 50,
++    "transformer_model_name": "480p_t2v",
++    "fps": 24,
++    "target_video_length": 121,
++    "aspect_ratio": "16:9",
++    "vae_stride": [4, 16, 16],
++    "sample_shift": 5.0,
++    "sample_guide_scale": 6.0,
++    "enable_cfg": true,
++    "attn_type": "sage_attn2",
++    "cpu_offload": false,
++    "parallel": {
++        "cfg_parallel": 2,
++        "seq_parallel": {
++            "type": "ulysses",
++            "size": 4
++        }
++    }
++}
+diff --git a/configs/hunyuan_video_15/hunyuan_video_t2v_720p_h20_1gpu.json b/configs/hunyuan_video_15/hunyuan_video_t2v_720p_h20_1gpu.json
+new file mode 100644
+index 0000000..ebb9018
+--- /dev/null
++++ b/configs/hunyuan_video_15/hunyuan_video_t2v_720p_h20_1gpu.json
+@@ -0,0 +1,14 @@
++{
++    "infer_steps": 50,
++    "transformer_model_name": "720p_t2v",
++    "fps": 24,
++    "target_video_length": 121,
++    "aspect_ratio": "16:9",
++    "vae_stride": [4, 16, 16],
++    "sample_shift": 9.0,
++    "sample_guide_scale": 6.0,
++    "enable_cfg": true,
++    "attn_type": "sage_attn2",
++    "cpu_offload": true,
++    "offload_granularity": "model"
++}
+diff --git a/configs/hunyuan_video_15/hunyuan_video_t2v_720p_h20_8gpu.json b/configs/hunyuan_video_15/hunyuan_video_t2v_720p_h20_8gpu.json
+new file mode 100644
+index 0000000..272fd90
+--- /dev/null
++++ b/configs/hunyuan_video_15/hunyuan_video_t2v_720p_h20_8gpu.json
+@@ -0,0 +1,20 @@
++{
++    "infer_steps": 50,
++    "transformer_model_name": "720p_t2v",
++    "fps": 24,
++    "target_video_length": 121,
++    "aspect_ratio": "16:9",
++    "vae_stride": [4, 16, 16],
++    "sample_shift": 9.0,
++    "sample_guide_scale": 6.0,
++    "enable_cfg": true,
++    "attn_type": "sage_attn2",
++    "cpu_offload": false,
++    "parallel": {
++        "cfg_parallel": 2,
++        "seq_parallel": {
++            "type": "ulysses",
++            "size": 4
++        }
++    }
++}
+diff --git a/configs/lingbot/lingbot_cam_moe_i2v.json b/configs/lingbot/lingbot_cam_moe_i2v.json
+new file mode 100644
+index 0000000..1409ad3
+--- /dev/null
++++ b/configs/lingbot/lingbot_cam_moe_i2v.json
+@@ -0,0 +1,24 @@
++{
++    "infer_steps": 40,
++    "target_video_length": 81,
++    "text_len": 512,
++    "target_height": 720,
++    "target_width": 1280,
++    "self_attn_1_type": "flash_attn2",
++    "cross_attn_1_type": "flash_attn2",
++    "cross_attn_2_type": "flash_attn2",
++    "sample_guide_scale": [
++        3.5,
++        3.5
++    ],
++    "sample_shift": 5.0,
++    "enable_cfg": false,
++    "cpu_offload": true,
++    "offload_granularity": "model",
++    "boundary": 0.900,
++    "use_image_encoder": false,
++    "vae_stride": [4, 8, 8],
++    "patch_size": [1, 2, 2],
++    "num_channels_latents": 16,
++    "fps": 16
++}
+diff --git a/configs/lingbot/lingbot_cam_moe_i2v_h20_8gpu.json b/configs/lingbot/lingbot_cam_moe_i2v_h20_8gpu.json
+new file mode 100644
+index 0000000..ed53214
+--- /dev/null
++++ b/configs/lingbot/lingbot_cam_moe_i2v_h20_8gpu.json
+@@ -0,0 +1,29 @@
++{
++    "infer_steps": 40,
++    "target_video_length": 81,
++    "text_len": 512,
++    "target_height": 720,
++    "target_width": 1280,
++    "self_attn_1_type": "flash_attn2",
++    "cross_attn_1_type": "flash_attn2",
++    "cross_attn_2_type": "flash_attn2",
++    "sample_guide_scale": [
++        3.5,
++        3.5
++    ],
++    "sample_shift": 5.0,
++    "enable_cfg": false,
++    "cpu_offload": false,
++    "offload_granularity": "model",
++    "boundary": 0.900,
++    "use_image_encoder": false,
++    "vae_stride": [4, 8, 8],
++    "patch_size": [1, 2, 2],
++    "num_channels_latents": 16,
++    "fps": 16,
++    "rope_type": "torch",
++    "parallel": {
++        "seq_p_size": 8,
++        "seq_p_attn_type": "ulysses"
++    }
++}
+diff --git a/configs/wan/wan_flf2v_h20_8gpu.json b/configs/wan/wan_flf2v_h20_8gpu.json
+new file mode 100644
+index 0000000..90f23c5
+--- /dev/null
++++ b/configs/wan/wan_flf2v_h20_8gpu.json
+@@ -0,0 +1,22 @@
++{
++    "infer_steps": 50,
++    "target_video_length": 81,
++    "target_height": 720,
++    "target_width": 1280,
++    "self_attn_1_type": "flash_attn2",
++    "cross_attn_1_type": "flash_attn2",
++    "cross_attn_2_type": "flash_attn2",
++    "sample_guide_scale": 5,
++    "sample_shift": 16,
++    "enable_cfg": true,
++    "cpu_offload": false,
++    "offload_granularity": "model",
++    "t5_cpu_offload": false,
++    "vae_cpu_offload": false,
++    "rope_type": "torch",
++    "parallel": {
++        "seq_p_size": 4,
++        "seq_p_attn_type": "ulysses",
++        "cfg_p_size": 2
++    }
++}
+diff --git a/configs/wan/wan_vace_h20_8gpu.json b/configs/wan/wan_vace_h20_8gpu.json
+new file mode 100644
+index 0000000..723a9a9
+--- /dev/null
++++ b/configs/wan/wan_vace_h20_8gpu.json
+@@ -0,0 +1,21 @@
++{
++    "infer_steps": 50,
++    "target_video_length": 81,
++    "target_height": 720,
++    "target_width": 1280,
++    "self_attn_1_type": "flash_attn2",
++    "cross_attn_1_type": "flash_attn2",
++    "cross_attn_2_type": "flash_attn2",
++    "sample_guide_scale": 5,
++    "sample_shift": 16,
++    "enable_cfg": true,
++    "cpu_offload": false,
++    "t5_cpu_offload": false,
++    "vae_cpu_offload": false,
++    "rope_type": "torch",
++    "parallel": {
++        "cfg_p_size": 2,
++        "seq_p_size": 4,
++        "seq_p_attn_type": "ulysses"
++    }
++}
+diff --git a/configs/wan22/wan_moe_flf2v_h20_8gpu.json b/configs/wan22/wan_moe_flf2v_h20_8gpu.json
+new file mode 100644
+index 0000000..437df3a
+--- /dev/null
++++ b/configs/wan22/wan_moe_flf2v_h20_8gpu.json
+@@ -0,0 +1,26 @@
++{
++    "infer_steps": 40,
++    "target_video_length": 81,
++    "target_height": 720,
++    "target_width": 1280,
++    "self_attn_1_type": "flash_attn2",
++    "cross_attn_1_type": "flash_attn2",
++    "cross_attn_2_type": "flash_attn2",
++    "sample_shift": 16,
++    "enable_cfg": false,
++    "cpu_offload": false,
++    "offload_granularity": "model",
++    "t5_cpu_offload": false,
++    "vae_cpu_offload": false,
++    "sample_guide_scale": [
++        3.5,
++        3.5
++    ],
++    "boundary": 0.900,
++    "use_image_encoder": false,
++    "rope_type": "torch",
++    "parallel": {
++        "seq_p_size": 8,
++        "seq_p_attn_type": "ulysses"
++    }
++}
+diff --git a/configs/wan22/wan_moe_i2v_h20_1gpu.json b/configs/wan22/wan_moe_i2v_h20_1gpu.json
+new file mode 100644
+index 0000000..2485823
+--- /dev/null
++++ b/configs/wan22/wan_moe_i2v_h20_1gpu.json
+@@ -0,0 +1,23 @@
++{
++    "infer_steps": 40,
++    "target_video_length": 81,
++    "text_len": 512,
++    "target_height": 720,
++    "target_width": 1280,
++    "self_attn_1_type": "flash_attn2",
++    "cross_attn_1_type": "flash_attn2",
++    "cross_attn_2_type": "flash_attn2",
++    "sample_guide_scale": [
++        3.5,
++        3.5
++    ],
++    "sample_shift": 5.0,
++    "enable_cfg": false,
++    "cpu_offload": true,
++    "offload_granularity": "model",
++    "t5_cpu_offload": false,
++    "vae_cpu_offload": false,
++    "boundary": 0.900,
++    "use_image_encoder": false,
++    "rope_type": "torch"
++}
+diff --git a/configs/wan22/wan_moe_i2v_h20_8gpu.json b/configs/wan22/wan_moe_i2v_h20_8gpu.json
+new file mode 100644
+index 0000000..b115eb1
+--- /dev/null
++++ b/configs/wan22/wan_moe_i2v_h20_8gpu.json
+@@ -0,0 +1,27 @@
++{
++    "infer_steps": 40,
++    "target_video_length": 81,
++    "text_len": 512,
++    "target_height": 720,
++    "target_width": 1280,
++    "self_attn_1_type": "flash_attn2",
++    "cross_attn_1_type": "flash_attn2",
++    "cross_attn_2_type": "flash_attn2",
++    "sample_guide_scale": [
++        3.5,
++        3.5
++    ],
++    "sample_shift": 5.0,
++    "enable_cfg": false,
++    "cpu_offload": false,
++    "offload_granularity": "model",
++    "t5_cpu_offload": false,
++    "vae_cpu_offload": false,
++    "boundary": 0.900,
++    "use_image_encoder": false,
++    "rope_type": "torch",
++    "parallel": {
++        "seq_p_size": 8,
++        "seq_p_attn_type": "ulysses"
++    }
++}
+diff --git a/configs/wan22/wan_moe_t2v_h20.json b/configs/wan22/wan_moe_t2v_h20.json
+new file mode 100644
+index 0000000..ad8bcf7
+--- /dev/null
++++ b/configs/wan22/wan_moe_t2v_h20.json
+@@ -0,0 +1,22 @@
++{
++    "infer_steps": 40,
++    "target_video_length": 81,
++    "text_len": 512,
++    "target_height": 720,
++    "target_width": 1280,
++    "self_attn_1_type": "flash_attn2",
++    "cross_attn_1_type": "flash_attn2",
++    "cross_attn_2_type": "flash_attn2",
++    "sample_guide_scale": [
++        4.0,
++        3.0
++    ],
++    "sample_shift": 12.0,
++    "enable_cfg": true,
++    "cpu_offload": true,
++    "offload_granularity": "model",
++    "t5_cpu_offload": false,
++    "vae_cpu_offload": false,
++    "boundary": 0.875,
++    "rope_type": "torch"
++}
+diff --git a/configs/wan22/wan_moe_t2v_h20_1gpu.json b/configs/wan22/wan_moe_t2v_h20_1gpu.json
+new file mode 100644
+index 0000000..ad8bcf7
+--- /dev/null
++++ b/configs/wan22/wan_moe_t2v_h20_1gpu.json
+@@ -0,0 +1,22 @@
++{
++    "infer_steps": 40,
++    "target_video_length": 81,
++    "text_len": 512,
++    "target_height": 720,
++    "target_width": 1280,
++    "self_attn_1_type": "flash_attn2",
++    "cross_attn_1_type": "flash_attn2",
++    "cross_attn_2_type": "flash_attn2",
++    "sample_guide_scale": [
++        4.0,
++        3.0
++    ],
++    "sample_shift": 12.0,
++    "enable_cfg": true,
++    "cpu_offload": true,
++    "offload_granularity": "model",
++    "t5_cpu_offload": false,
++    "vae_cpu_offload": false,
++    "boundary": 0.875,
++    "rope_type": "torch"
++}
+diff --git a/configs/wan22/wan_moe_t2v_h20_8gpu.json b/configs/wan22/wan_moe_t2v_h20_8gpu.json
+new file mode 100644
+index 0000000..564f238
+--- /dev/null
++++ b/configs/wan22/wan_moe_t2v_h20_8gpu.json
+@@ -0,0 +1,27 @@
++{
++    "infer_steps": 40,
++    "target_video_length": 81,
++    "text_len": 512,
++    "target_height": 720,
++    "target_width": 1280,
++    "self_attn_1_type": "flash_attn2",
++    "cross_attn_1_type": "flash_attn2",
++    "cross_attn_2_type": "flash_attn2",
++    "sample_guide_scale": [
++        4.0,
++        3.0
++    ],
++    "sample_shift": 12.0,
++    "enable_cfg": true,
++    "cpu_offload": false,
++    "offload_granularity": "model",
++    "t5_cpu_offload": false,
++    "vae_cpu_offload": false,
++    "boundary": 0.875,
++    "rope_type": "torch",
++    "parallel": {
++        "seq_p_size": 4,
++        "seq_p_attn_type": "ulysses",
++        "cfg_p_size": 2
++    }
++}
+diff --git a/configs/wan22/wan_moe_t2v_h20_8gpu_diffusers.json b/configs/wan22/wan_moe_t2v_h20_8gpu_diffusers.json
+new file mode 100644
+index 0000000..564f238
+--- /dev/null
++++ b/configs/wan22/wan_moe_t2v_h20_8gpu_diffusers.json
+@@ -0,0 +1,27 @@
++{
++    "infer_steps": 40,
++    "target_video_length": 81,
++    "text_len": 512,
++    "target_height": 720,
++    "target_width": 1280,
++    "self_attn_1_type": "flash_attn2",
++    "cross_attn_1_type": "flash_attn2",
++    "cross_attn_2_type": "flash_attn2",
++    "sample_guide_scale": [
++        4.0,
++        3.0
++    ],
++    "sample_shift": 12.0,
++    "enable_cfg": true,
++    "cpu_offload": false,
++    "offload_granularity": "model",
++    "t5_cpu_offload": false,
++    "vae_cpu_offload": false,
++    "boundary": 0.875,
++    "rope_type": "torch",
++    "parallel": {
++        "seq_p_size": 4,
++        "seq_p_attn_type": "ulysses",
++        "cfg_p_size": 2
++    }
++}
+diff --git a/configs/wan22/wan_ti2v_i2v_h20_8gpu.json b/configs/wan22/wan_ti2v_i2v_h20_8gpu.json
+new file mode 100644
+index 0000000..8e2065f
+--- /dev/null
++++ b/configs/wan22/wan_ti2v_i2v_h20_8gpu.json
+@@ -0,0 +1,31 @@
++{
++    "infer_steps": 50,
++    "target_video_length": 121,
++    "text_len": 512,
++    "target_height": 704,
++    "target_width": 1280,
++    "num_channels_latents": 48,
++    "vae_stride": [
++        4,
++        16,
++        16
++    ],
++    "self_attn_1_type": "flash_attn2",
++    "cross_attn_1_type": "flash_attn2",
++    "cross_attn_2_type": "flash_attn2",
++    "sample_guide_scale": 5.0,
++    "sample_shift": 5.0,
++    "enable_cfg": true,
++    "cpu_offload": false,
++    "offload_granularity": "model",
++    "t5_cpu_offload": false,
++    "vae_cpu_offload": false,
++    "fps": 24,
++    "use_image_encoder": false,
++    "rope_type": "torch",
++    "parallel": {
++        "seq_p_size": 4,
++        "seq_p_attn_type": "ulysses",
++        "cfg_p_size": 2
++    }
++}
+diff --git a/configs/wan22_vace/h20_1gpu/wan22_moe_vace_h20_1gpu.json b/configs/wan22_vace/h20_1gpu/wan22_moe_vace_h20_1gpu.json
+new file mode 100644
+index 0000000..4608c6a
+--- /dev/null
++++ b/configs/wan22_vace/h20_1gpu/wan22_moe_vace_h20_1gpu.json
+@@ -0,0 +1,19 @@
++{
++    "infer_steps": 40,
++    "target_video_length": 81,
++    "target_height": 720,
++    "target_width": 1280,
++    "self_attn_1_type": "flash_attn2",
++    "cross_attn_1_type": "flash_attn2",
++    "cross_attn_2_type": "flash_attn2",
++    "sample_guide_scale": [3.5, 3.5],
++    "sample_shift": 16,
++    "enable_cfg": false,
++    "cpu_offload": true,
++    "offload_granularity": "model",
++    "t5_cpu_offload": false,
++    "vae_cpu_offload": false,
++    "boundary": 0.900,
++    "use_image_encoder": false,
++    "rope_type": "torch"
++}
+diff --git a/configs/wan22_vace/h20_8gpu/wan22_moe_vace_h20_8gpu.json b/configs/wan22_vace/h20_8gpu/wan22_moe_vace_h20_8gpu.json
+new file mode 100644
+index 0000000..5782144
+--- /dev/null
++++ b/configs/wan22_vace/h20_8gpu/wan22_moe_vace_h20_8gpu.json
+@@ -0,0 +1,23 @@
++{
++    "infer_steps": 40,
++    "target_video_length": 81,
++    "target_height": 720,
++    "target_width": 1280,
++    "self_attn_1_type": "flash_attn2",
++    "cross_attn_1_type": "flash_attn2",
++    "cross_attn_2_type": "flash_attn2",
++    "sample_guide_scale": [3.5, 3.5],
++    "sample_shift": 16,
++    "enable_cfg": false,
++    "cpu_offload": false,
++    "offload_granularity": "model",
++    "t5_cpu_offload": false,
++    "vae_cpu_offload": false,
++    "boundary": 0.900,
++    "use_image_encoder": false,
++    "rope_type": "torch",
++    "parallel": {
++        "seq_p_size": 8,
++        "seq_p_attn_type": "ulysses"
++    }
++}
+diff --git a/lightx2v/infer.py b/lightx2v/infer.py
+index b6a277b..915273e 100755
+--- a/lightx2v/infer.py
++++ b/lightx2v/infer.py
+@@ -17,6 +17,7 @@ from lightx2v.models.runners.wan.wan_audio_runner import Wan22AudioRunner, WanAu
+ from lightx2v.models.runners.wan.wan_distill_runner import WanDistillRunner  # noqa: F401
+ from lightx2v.models.runners.wan.wan_matrix_game2_runner import WanSFMtxg2Runner  # noqa: F401
+ from lightx2v.models.runners.wan.wan_runner import Wan22MoeRunner, WanRunner  # noqa: F401
++from lightx2v.models.runners.wan.lingbot_runner import LingBotCamMoeRunner  # noqa: F401
+ from lightx2v.models.runners.wan.wan_sf_runner import WanSFRunner  # noqa: F401
+ from lightx2v.models.runners.wan.wan_vace_runner import Wan22MoeVaceRunner, WanVaceRunner  # noqa: F401
+ from lightx2v.models.runners.worldplay.worldplay_ar_runner import WorldPlayARRunner  # noqa: F401
+@@ -71,6 +72,7 @@ def main():
+             "z_image",
+             "ltx2",
+             "bagel",
++            "lingbot_cam_moe",
+         ],
+         default="wan2.1",
+     )
+@@ -148,6 +150,12 @@ def main():
+         default=None,
+         help="Path to action model checkpoint for WorldPlay models.",
+     )
++    parser.add_argument(
++        "--action_path",
++        type=str,
++        default=None,
++        help="Path to camera pose file (JSON/NPY/NPZ) for LingBot camera control.",
++    )
+     parser.add_argument("--save_result_path", type=str, default=None, help="The path to save video path/file")
+     parser.add_argument("--return_result_tensor", action="store_true", help="Whether to return result tensor. (Useful for comfyui)")
+     parser.add_argument("--target_shape", nargs="+", default=[], help="Set return video or image shape")
+diff --git a/lightx2v/models/networks/wan/infer/lingbot/__init__.py b/lightx2v/models/networks/wan/infer/lingbot/__init__.py
+new file mode 100644
+index 0000000..e69de29
+diff --git a/lightx2v/models/networks/wan/infer/lingbot/pre_infer.py b/lightx2v/models/networks/wan/infer/lingbot/pre_infer.py
+new file mode 100644
+index 0000000..6fff6b1
+--- /dev/null
++++ b/lightx2v/models/networks/wan/infer/lingbot/pre_infer.py
+@@ -0,0 +1,173 @@
++"""
++LingBot Camera Control - Pre Inference Module.
++
++Extends WanPreInfer to handle Plücker camera control embeddings.
++
++Original lingbot-world logic (wan/modules/model.py):
++  1. c2ws_plucker_emb -> rearrange to patches -> patch_embedding_wancamctrl (Linear: 1536->dim)
++  2. c2ws_hidden_states = layer2(silu(layer1(c2ws_plucker_emb)))  # MLP: dim->dim->dim
++  3. cam_emb = c2ws_plucker_emb + c2ws_hidden_states  # residual connection
++  4. cam_emb is passed to each block for scale/shift injection
++"""
++
++import torch
++import torch.nn.functional as F
++
++from lightx2v.models.networks.wan.infer.pre_infer import WanPreInfer
++from lightx2v.models.networks.wan.infer.module_io import GridOutput, WanPreInferModuleOutput
++from lightx2v.models.networks.wan.infer.utils import sinusoidal_embedding_1d
++from lightx2v.utils.envs import *
++from lightx2v_platform.base.global_var import AI_DEVICE
++
++
++def plucker_positional_encoding(x, num_freqs=32):
++    """
++    NeRF-style Fourier positional encoding for Plucker coordinates.
++
++    Expands each channel using sinusoidal frequencies:
++      x_channel -> [sin(2^0 * pi * x), cos(2^0 * pi * x), ..., sin(2^(L-1) * pi * x), cos(2^(L-1) * pi * x)]
++
++    Args:
++        x: (C, F, H, W) Plucker coordinates with C=6
++        num_freqs: number of frequency bands (default 32, giving 64 dims per channel)
++
++    Returns:
++        encoded: (C * num_freqs * 2, F, H, W) = (384, F, H, W) for C=6, num_freqs=32
++    """
++    # freq_bands: (num_freqs,) = [2^0, 2^1, ..., 2^(L-1)]
++    freq_bands = (2.0 ** torch.arange(num_freqs, dtype=x.dtype, device=x.device)) * torch.pi
++    # x: (C, F, H, W) -> (C, 1, F, H, W)
++    # freq_bands: (1, num_freqs, 1, 1)
++    x_expanded = x.unsqueeze(1)  # (C, 1, F, H, W)
++    freq_bands = freq_bands.view(1, num_freqs, 1, 1, 1)  # broadcastable
++    # (C, num_freqs, F, H, W)
++    x_freq = x_expanded * freq_bands
++    # sin and cos: each (C, num_freqs, F, H, W)
++    encoded = torch.cat([torch.sin(x_freq), torch.cos(x_freq)], dim=1)  # (C, 2*num_freqs, F, H, W)
++    # Reshape to (C * 2 * num_freqs, F, H, W) = (384, F, H, W)
++    C = x.shape[0]
++    encoded = encoded.reshape(C * 2 * num_freqs, *x.shape[1:])
++    return encoded
++
++
++class LingBotPreInfer(WanPreInfer):
++    """Pre-inference for LingBot camera-controlled I2V model."""
++
++    def __init__(self, config):
++        super().__init__(config)
++        self.patch_size = config.get("patch_size", [1, 2, 2])
++        self.plucker_num_freqs = 32  # 6 channels * 32 freqs * 2 (sin+cos) = 384 channels
++
++    @torch.no_grad()
++    def infer(self, weights, inputs, kv_start=0, kv_end=0):
++        x = self.scheduler.latents
++        t = self.scheduler.timestep_input
++
++        if self.scheduler.infer_condition:
++            context = inputs["text_encoder_output"]["context"]
++        else:
++            context = inputs["text_encoder_output"]["context_null"]
++
++        # I2V: concat VAE encoder output (mask + encoded first frame)
++        if self.task in ["i2v"]:
++            if self.config.get("changing_resolution", False):
++                image_encoder = inputs["image_encoder_output"]["vae_encoder_out"][self.scheduler.changing_resolution_index]
++            else:
++                image_encoder = inputs["image_encoder_output"]["vae_encoder_out"]
++
++            if image_encoder is not None:
++                y = image_encoder
++                x = torch.cat([x, y], dim=0)
++
++        # Standard patch embedding
++        x = weights.patch_embedding.apply(x.unsqueeze(0))
++
++        grid_sizes_t, grid_sizes_h, grid_sizes_w = x.shape[2:]
++        x = x.flatten(2).transpose(1, 2).contiguous()
++
++        # ===== Camera control injection =====
++        # Following original lingbot-world logic:
++        # 1. cam_latent (Plucker 6ch) -> Fourier PE -> 384ch -> rearrange to patches -> Linear projection to dim
++        # 2. MLP: layer1 -> silu -> layer2 -> c2ws_hidden_states
++        # 3. cam_emb = projected_plucker + c2ws_hidden_states (residual)
++        cam_latent = inputs.get("image_encoder_output", {}).get("cam_latent", None)
++        if cam_latent is not None:
++            # cam_latent: (6, F, H, W) - raw Plucker coordinates
++            # Step 0: Fourier positional encoding: (6, F, H, W) -> (384, F, H, W)
++            cam_encoded = plucker_positional_encoding(cam_latent, num_freqs=self.plucker_num_freqs)
++
++            # Step 1: Rearrange into patches
++            # cam_encoded: (C_enc, F, H, W) where C_enc = 6 * 2 * num_freqs = 384
++            C = cam_encoded.shape[0]  # 384
++            p1, p2, p3 = self.patch_size
++            F_lat = cam_encoded.shape[1] // p1
++            H_lat = cam_encoded.shape[2] // p2
++            W_lat = cam_encoded.shape[3] // p3
++
++            # Reshape: (C, F*p1, H*p2, W*p3) -> (F, H, W, C*p1*p2*p3) -> (F*H*W, C*p1*p2*p3)
++            cam_patches = cam_encoded.reshape(C, F_lat, p1, H_lat, p2, W_lat, p3)
++            cam_patches = cam_patches.permute(1, 3, 5, 0, 2, 4, 6)  # (F, H, W, C, p1, p2, p3)
++            cam_patches = cam_patches.reshape(F_lat * H_lat * W_lat, C * p1 * p2 * p3)  # (seq_len, 1536)
++
++            # Linear projection: 1536 -> dim (5120)
++            c2ws_plucker_emb = weights.patch_embedding_wancamctrl.apply(cam_patches)
++
++            # MLP: c2ws_hidden_states = layer2(silu(layer1(c2ws_plucker_emb)))
++            c2ws_hidden_states = weights.c2ws_hidden_states_layer1.apply(c2ws_plucker_emb)
++            c2ws_hidden_states = torch.nn.functional.silu(c2ws_hidden_states)
++            c2ws_hidden_states = weights.c2ws_hidden_states_layer2.apply(c2ws_hidden_states)
++
++            # Residual connection: cam_emb = projected_plucker + c2ws_hidden_states
++            cam_emb = c2ws_plucker_emb + c2ws_hidden_states
++        else:
++            cam_emb = None
++
++        # Time embedding
++        embed = sinusoidal_embedding_1d(self.freq_dim, t.flatten())
++        if self.sensitive_layer_dtype != self.infer_dtype:
++            embed = weights.time_embedding_0.apply(embed.to(self.sensitive_layer_dtype))
++        else:
++            embed = weights.time_embedding_0.apply(embed)
++        embed = torch.nn.functional.silu(embed)
++        embed = weights.time_embedding_2.apply(embed)
++        embed0 = torch.nn.functional.silu(embed)
++
++        embed0 = weights.time_projection_1.apply(embed0).unflatten(1, (6, self.dim))
++
++        # Text embeddings
++        if self.sensitive_layer_dtype != self.infer_dtype:
++            out = weights.text_embedding_0.apply(context.squeeze(0).to(self.sensitive_layer_dtype))
++        else:
++            out = weights.text_embedding_0.apply(context.squeeze(0))
++        out = torch.nn.functional.gelu(out, approximate="tanh")
++        context = weights.text_embedding_2.apply(out)
++
++        if self.clean_cuda_cache:
++            del out
++            torch.cuda.empty_cache()
++
++        # No CLIP embedding for lingbot (use_image_encoder=False)
++
++        grid_sizes = GridOutput(
++            tensor=torch.tensor([[grid_sizes_t, grid_sizes_h, grid_sizes_w]], dtype=torch.int32, device=x.device),
++            tuple=(grid_sizes_t, grid_sizes_h, grid_sizes_w),
++        )
++
++        if self.cos_sin is None or self.grid_sizes != grid_sizes.tuple:
++            freqs = self.freqs.clone()
++            self.grid_sizes = grid_sizes.tuple
++            self.cos_sin = self.prepare_cos_sin(grid_sizes.tuple, freqs)
++
++        return WanPreInferModuleOutput(
++            embed=embed,
++            grid_sizes=grid_sizes,
++            x=x.squeeze(0),
++            embed0=embed0.squeeze(0),
++            context=context,
++            cos_sin=self.cos_sin,
++            adapter_args={
++                "motion_vec": None,
++                "cam_emb": cam_emb,
++                "cam_tokens": None,
++            },
++        )
+diff --git a/lightx2v/models/networks/wan/infer/lingbot/transformer_infer.py b/lightx2v/models/networks/wan/infer/lingbot/transformer_infer.py
+new file mode 100644
+index 0000000..91dd84b
+--- /dev/null
++++ b/lightx2v/models/networks/wan/infer/lingbot/transformer_infer.py
+@@ -0,0 +1,133 @@
++"""
++LingBot Camera Control - Transformer Inference Module.
++
++Extends WanTransformerInfer to inject camera control signal per-block:
++  - cam_injector_layer1/2: MLP that processes cam_emb
++  - cam_scale_layer / cam_shift_layer: modulate hidden states with camera signal
++
++The injection follows the lingbot-world official implementation:
++  After self-attention residual, before cross-attention:
++    cam_feat = silu(cam_injector_layer1(cam_emb))
++    cam_feat = cam_injector_layer2(cam_feat)
++    cam_scale = cam_scale_layer(cam_feat)
++    cam_shift = cam_shift_layer(cam_feat)
++    x = x * (1 + cam_scale) + cam_shift
++"""
++
++import torch
++
++from lightx2v.models.networks.wan.infer.transformer_infer import WanTransformerInfer
++from lightx2v.utils.envs import *
++
++
++class LingBotTransformerInfer(WanTransformerInfer):
++    """Transformer inference with per-block camera control injection."""
++
++    def __init__(self, config):
++        super().__init__(config)
++
++    def infer_block(self, block, x, pre_infer_out):
++        """Override to inject camera control between self-attn and cross-attn."""
++        if hasattr(block.compute_phases[0], "before_proj") and block.compute_phases[0].before_proj.weight is not None:
++            x = block.compute_phases[0].before_proj.apply(x) + pre_infer_out.x
++
++        shift_msa, scale_msa, gate_msa, c_shift_msa, c_scale_msa, c_gate_msa = self.pre_process(
++            block.compute_phases[0].modulation,
++            pre_infer_out.embed0,
++        )
++        y_out = self.infer_self_attn(
++            block.compute_phases[0],
++            x,
++            shift_msa,
++            scale_msa,
++        )
++
++        # ===== Camera control injection (after self-attn residual, before cross-attn) =====
++        cam_emb = pre_infer_out.adapter_args.get("cam_emb", None)
++        cam_tokens = pre_infer_out.adapter_args.get("cam_tokens", None)
++
++        if cam_emb is not None and hasattr(block.compute_phases[0], "cam_injector_layer1"):
++            # Apply self-attn residual first
++            if self.sensitive_layer_dtype != self.infer_dtype:
++                x = x.to(self.sensitive_layer_dtype) + y_out.to(self.sensitive_layer_dtype) * gate_msa.squeeze()
++            else:
++                x = x + y_out * gate_msa.squeeze()
++
++            # Camera injection
++            cam_phase = block.compute_phases[0]  # cam weights stored in self-attn phase
++            cam_feat = cam_phase.cam_injector_layer1.apply(cam_emb)
++            cam_feat = torch.nn.functional.silu(cam_feat)
++            cam_feat = cam_phase.cam_injector_layer2.apply(cam_feat)
++
++            cam_scale = cam_phase.cam_scale_layer.apply(cam_feat)
++            cam_shift = cam_phase.cam_shift_layer.apply(cam_feat)
++
++            # cam_tokens are per-frame tokens, need to broadcast to spatial dim
++            # cam_emb: (num_frames, dim) -> need to expand to match x: (seq_len, dim)
++            # grid_sizes: (t, h, w), seq_len = t * h * w
++            t, h, w = pre_infer_out.grid_sizes.tuple
++            # cam_scale/cam_shift: (num_frames, dim) -> (t, 1, 1, dim) -> (t*h*w, dim)
++            if cam_scale.dim() == 2 and cam_scale.shape[0] == t:
++                cam_scale = cam_scale.unsqueeze(1).unsqueeze(1).expand(t, h, w, -1).reshape(t * h * w, -1)
++                cam_shift = cam_shift.unsqueeze(1).unsqueeze(1).expand(t, h, w, -1).reshape(t * h * w, -1)
++
++            x = x * (1 + cam_scale) + cam_shift
++
++            # Now do cross-attn (without re-adding y_out)
++            norm3_out = block.compute_phases[1].norm3.apply(x)
++            # Continue with cross-attn but skip the initial residual in infer_cross_attn
++            x, attn_out = self._infer_cross_attn_no_residual(block.compute_phases[1], x, pre_infer_out.context, norm3_out)
++        else:
++            # Standard path: no camera control
++            x, attn_out = self.infer_cross_attn(block.compute_phases[1], x, pre_infer_out.context, y_out, gate_msa)
++
++        y = self.infer_ffn(block.compute_phases[2], x, attn_out, c_shift_msa, c_scale_msa)
++        x = self.post_process(x, y, c_gate_msa, pre_infer_out)
++
++        if hasattr(block.compute_phases[2], "after_proj"):
++            pre_infer_out.adapter_args["hints"].append(block.compute_phases[2].after_proj.apply(x))
++
++        if self.has_post_adapter:
++            x = self.infer_post_adapter(block.compute_phases[3], x, pre_infer_out)
++
++        return x
++
++    def _infer_cross_attn_no_residual(self, phase, x, context, norm3_out):
++        """Cross attention without the initial self-attn residual (already applied in cam injection)."""
++        context_img = None  # lingbot doesn't use CLIP
++
++        if self.sensitive_layer_dtype != self.infer_dtype:
++            context = context.to(self.infer_dtype)
++
++        n, d = self.num_heads, self.head_dim
++        q = phase.cross_attn_norm_q.apply(phase.cross_attn_q.apply(norm3_out)).view(-1, n, d)
++        k = phase.cross_attn_norm_k.apply(phase.cross_attn_k.apply(context)).view(-1, n, d)
++        v = phase.cross_attn_v.apply(context).view(-1, n, d)
++
++        if self.cross_attn_cu_seqlens_q is None:
++            if self.cross_attn_1_type == "flash_attn2" or self.cross_attn_1_type == "flash_attn3":
++                self.cross_attn_cu_seqlens_q = torch.tensor([0, q.shape[0]]).cumsum(0, dtype=torch.int32).to(q.device, non_blocking=True)
++            else:
++                self.cross_attn_cu_seqlens_q = torch.tensor([0, q.shape[0]]).cumsum(0, dtype=torch.int32)
++        if self.cross_attn_cu_seqlens_kv is None:
++            if self.cross_attn_1_type == "flash_attn2" or self.cross_attn_1_type == "flash_attn3":
++                self.cross_attn_cu_seqlens_kv = torch.tensor([0, k.shape[0]]).cumsum(0, dtype=torch.int32).to(k.device, non_blocking=True)
++            else:
++                self.cross_attn_cu_seqlens_kv = torch.tensor([0, k.shape[0]]).cumsum(0, dtype=torch.int32)
++
++        attn_out = phase.cross_attn_1.apply(
++            q=q,
++            k=k,
++            v=v,
++            cu_seqlens_q=self.cross_attn_cu_seqlens_q,
++            cu_seqlens_kv=self.cross_attn_cu_seqlens_kv,
++            max_seqlen_q=q.size(0),
++            max_seqlen_kv=k.size(0),
++        )
++
++        attn_out = phase.cross_attn_o.apply(attn_out)
++
++        if self.clean_cuda_cache:
++            del q, k, v, norm3_out, context
++            torch.cuda.empty_cache()
++        return x, attn_out
+diff --git a/lightx2v/models/networks/wan/lingbot_model.py b/lightx2v/models/networks/wan/lingbot_model.py
+new file mode 100644
+index 0000000..037f53e
+--- /dev/null
++++ b/lightx2v/models/networks/wan/lingbot_model.py
+@@ -0,0 +1,80 @@
++"""
++LingBot Camera Control - Model.
++
++Extends WanModel with LingBot-specific pre_weight_class and transformer_weight_class
++that include camera control modules.
++"""
++
++import torch
++import torch.distributed as dist
++import torch.nn.functional as F
++
++from lightx2v.models.networks.wan.model import WanModel
++from lightx2v.models.networks.wan.infer.lingbot.pre_infer import LingBotPreInfer
++from lightx2v.models.networks.wan.infer.lingbot.transformer_infer import LingBotTransformerInfer
++from lightx2v.models.networks.wan.infer.post_infer import WanPostInfer
++from lightx2v.models.networks.wan.weights.lingbot_pre_weights import LingBotPreWeights
++from lightx2v.models.networks.wan.weights.lingbot_transformer_weights import LingBotTransformerWeights
++from lightx2v.models.networks.wan.infer.offload.transformer_infer import WanOffloadTransformerInfer
++
++
++class LingBotModel(WanModel):
++    pre_weight_class = LingBotPreWeights
++    transformer_weight_class = LingBotTransformerWeights
++
++    def __init__(self, model_path, config, device, model_type="wan2.1", lora_path=None, lora_strength=1.0):
++        super().__init__(model_path, config, device, model_type, lora_path, lora_strength)
++
++    @torch.no_grad()
++    def _seq_parallel_pre_process(self, pre_infer_out):
++        """Override to also chunk cam_emb along sequence dimension for seq parallel."""
++        pre_infer_out = super()._seq_parallel_pre_process(pre_infer_out)
++
++        # Chunk cam_emb the same way as x
++        cam_emb = pre_infer_out.adapter_args.get("cam_emb", None)
++        if cam_emb is not None:
++            world_size = dist.get_world_size(self.seq_p_group)
++            cur_rank = dist.get_rank(self.seq_p_group)
++            f, _, _ = pre_infer_out.grid_sizes.tuple
++            multiple = world_size * f
++            padding_size = (multiple - (cam_emb.shape[0] % multiple)) % multiple
++            if padding_size > 0:
++                cam_emb = F.pad(cam_emb, (0, 0, 0, padding_size))
++            pre_infer_out.adapter_args["cam_emb"] = torch.chunk(cam_emb, world_size, dim=0)[cur_rank]
++
++        return pre_infer_out
++
++    def _init_infer_class(self):
++        self.pre_infer_class = LingBotPreInfer
++        self.post_infer_class = WanPostInfer
++
++        if self.config["feature_caching"] == "NoCaching":
++            self.transformer_infer_class = LingBotTransformerInfer if not self.cpu_offload else WanOffloadTransformerInfer
++        else:
++            # For feature caching modes, fall back to standard (cam injection may not be cached-compatible yet)
++            # TODO: Implement lingbot-specific caching if needed
++            from lightx2v.models.networks.wan.infer.feature_caching.transformer_infer import (
++                WanTransformerInferTeaCaching,
++                WanTransformerInferTaylorCaching,
++                WanTransformerInferAdaCaching,
++                WanTransformerInferCustomCaching,
++                WanTransformerInferFirstBlock,
++                WanTransformerInferDualBlock,
++                WanTransformerInferDynamicBlock,
++                WanTransformerInferMagCaching,
++            )
++            caching_map = {
++                "Tea": WanTransformerInferTeaCaching,
++                "TaylorSeer": WanTransformerInferTaylorCaching,
++                "Ada": WanTransformerInferAdaCaching,
++                "Custom": WanTransformerInferCustomCaching,
++                "FirstBlock": WanTransformerInferFirstBlock,
++                "DualBlock": WanTransformerInferDualBlock,
++                "DynamicBlock": WanTransformerInferDynamicBlock,
++                "Mag": WanTransformerInferMagCaching,
++            }
++            fc = self.config["feature_caching"]
++            if fc in caching_map:
++                self.transformer_infer_class = caching_map[fc]
++            else:
++                raise NotImplementedError(f"Unsupported feature_caching type: {fc}")
+diff --git a/lightx2v/models/networks/wan/model.py b/lightx2v/models/networks/wan/model.py
+index 5b15b9b..f1f7a4a 100755
+--- a/lightx2v/models/networks/wan/model.py
++++ b/lightx2v/models/networks/wan/model.py
+@@ -158,8 +158,9 @@ class WanModel(BaseTransformerModel):
+ 
+     @torch.no_grad()
+     def infer(self, inputs):
++        is_moe_model = "wan2.2_moe" in self.config["model_cls"] or "lingbot_cam_moe" in self.config["model_cls"]
+         if self.cpu_offload:
+-            if self.offload_granularity == "model" and self.scheduler.step_index == 0 and "wan2.2_moe" not in self.config["model_cls"]:
++            if self.offload_granularity == "model" and self.scheduler.step_index == 0 and not is_moe_model:
+                 self.to_cuda()
+             elif self.offload_granularity != "model":
+                 self.pre_weight.to_cuda()
+@@ -192,7 +193,7 @@ class WanModel(BaseTransformerModel):
+             self.scheduler.noise_pred = self._infer_cond_uncond(inputs, infer_condition=True)
+ 
+         if self.cpu_offload:
+-            if self.offload_granularity == "model" and self.scheduler.step_index == self.scheduler.infer_steps - 1 and "wan2.2_moe" not in self.config["model_cls"]:
++            if self.offload_granularity == "model" and self.scheduler.step_index == self.scheduler.infer_steps - 1 and not is_moe_model:
+                 self.to_cpu()
+             elif self.offload_granularity != "model":
+                 self.pre_weight.to_cpu()
+diff --git a/lightx2v/models/networks/wan/weights/lingbot_pre_weights.py b/lightx2v/models/networks/wan/weights/lingbot_pre_weights.py
+new file mode 100644
+index 0000000..2897f62
+--- /dev/null
++++ b/lightx2v/models/networks/wan/weights/lingbot_pre_weights.py
+@@ -0,0 +1,45 @@
++"""
++LingBot Camera Control - Pre Weights Module.
++
++Extends WanPreWeights with:
++  - patch_embedding_wancamctrl: Linear projection for camera Plücker patches (not Conv3D!)
++  - c2ws_hidden_states_layer1/2: MLP to process projected Plücker embeddings
++
++Original lingbot-world uses nn.Linear for patch_embedding_wancamctrl:
++  nn.Linear(6 * 64 * patch_size[0] * patch_size[1] * patch_size[2], dim)
++"""
++
++from lightx2v.models.networks.wan.weights.pre_weights import WanPreWeights
++from lightx2v.utils.registry_factory import MM_WEIGHT_REGISTER
++
++
++class LingBotPreWeights(WanPreWeights):
++    def __init__(self, config):
++        super().__init__(config)
++
++        # Camera control Plücker patch embedding
++        # Original lingbot uses nn.Linear (not Conv3D):
++        #   nn.Linear(6 * 64 * patch_size_prod, dim)
++        self.add_module(
++            "patch_embedding_wancamctrl",
++            MM_WEIGHT_REGISTER["Default"](
++                "patch_embedding_wancamctrl.weight",
++                "patch_embedding_wancamctrl.bias",
++            ),
++        )
++
++        # Camera-to-world hidden states MLP (both layers: dim -> dim)
++        self.add_module(
++            "c2ws_hidden_states_layer1",
++            MM_WEIGHT_REGISTER["Default"](
++                "c2ws_hidden_states_layer1.weight",
++                "c2ws_hidden_states_layer1.bias",
++            ),
++        )
++        self.add_module(
++            "c2ws_hidden_states_layer2",
++            MM_WEIGHT_REGISTER["Default"](
++                "c2ws_hidden_states_layer2.weight",
++                "c2ws_hidden_states_layer2.bias",
++            ),
++        )
+diff --git a/lightx2v/models/networks/wan/weights/lingbot_transformer_weights.py b/lightx2v/models/networks/wan/weights/lingbot_transformer_weights.py
+new file mode 100644
+index 0000000..de01c3b
+--- /dev/null
++++ b/lightx2v/models/networks/wan/weights/lingbot_transformer_weights.py
+@@ -0,0 +1,295 @@
++"""
++LingBot Camera Control - Transformer Weights Module.
++
++Extends WanTransformerWeights with per-block camera control layers:
++  - cam_injector_layer1/2: MLP for camera embedding
++  - cam_scale_layer: linear layer for modulation scale
++  - cam_shift_layer: linear layer for modulation shift
++"""
++
++from lightx2v.common.modules.weight_module import WeightModule, WeightModuleList
++from lightx2v.models.networks.wan.weights.transformer_weights import (
++    WanTransformerWeights,
++    WanTransformerAttentionBlock,
++    WanSelfAttention,
++    WanCrossAttention,
++    WanFFN,
++)
++from lightx2v.utils.registry_factory import (
++    ATTN_WEIGHT_REGISTER,
++    LN_WEIGHT_REGISTER,
++    MM_WEIGHT_REGISTER,
++    RMS_WEIGHT_REGISTER,
++    TENSOR_REGISTER,
++)
++
++
++class LingBotSelfAttention(WanSelfAttention):
++    """Self-attention with additional camera control weights."""
++
++    def __init__(self, block_index, block_prefix, task, mm_type, config,
++                 create_cuda_buffer=False, create_cpu_buffer=False,
++                 lazy_load=False, lazy_load_file=None, lora_path=None):
++        super().__init__(
++            block_index, block_prefix, task, mm_type, config,
++            create_cuda_buffer, create_cpu_buffer,
++            lazy_load, lazy_load_file, lora_path,
++        )
++
++        # Camera injector MLP
++        self.add_module(
++            "cam_injector_layer1",
++            MM_WEIGHT_REGISTER["Default"](
++                f"{block_prefix}.{self.block_index}.cam_injector_layer1.weight",
++                f"{block_prefix}.{self.block_index}.cam_injector_layer1.bias",
++                create_cuda_buffer,
++                create_cpu_buffer,
++                lazy_load,
++                lazy_load_file,
++            ),
++        )
++        self.add_module(
++            "cam_injector_layer2",
++            MM_WEIGHT_REGISTER["Default"](
++                f"{block_prefix}.{self.block_index}.cam_injector_layer2.weight",
++                f"{block_prefix}.{self.block_index}.cam_injector_layer2.bias",
++                create_cuda_buffer,
++                create_cpu_buffer,
++                lazy_load,
++                lazy_load_file,
++            ),
++        )
++
++        # Camera scale and shift
++        self.add_module(
++            "cam_scale_layer",
++            MM_WEIGHT_REGISTER["Default"](
++                f"{block_prefix}.{self.block_index}.cam_scale_layer.weight",
++                f"{block_prefix}.{self.block_index}.cam_scale_layer.bias",
++                create_cuda_buffer,
++                create_cpu_buffer,
++                lazy_load,
++                lazy_load_file,
++            ),
++        )
++        self.add_module(
++            "cam_shift_layer",
++            MM_WEIGHT_REGISTER["Default"](
++                f"{block_prefix}.{self.block_index}.cam_shift_layer.weight",
++                f"{block_prefix}.{self.block_index}.cam_shift_layer.bias",
++                create_cuda_buffer,
++                create_cpu_buffer,
++                lazy_load,
++                lazy_load_file,
++            ),
++        )
++
++
++class LingBotAttentionBlock(WeightModule):
++    """Attention block with LingBot camera control weights in self-attention phase."""
++
++    def __init__(
++        self,
++        block_index,
++        task,
++        mm_type,
++        config,
++        create_cuda_buffer=False,
++        create_cpu_buffer=False,
++        block_prefix="blocks",
++        lazy_load=False,
++        lazy_load_path=None,
++        lora_path=None,
++    ):
++        super().__init__()
++        self.block_index = block_index
++        self.mm_type = mm_type
++        self.task = task
++        self.config = config
++        self.create_cuda_buffer = create_cuda_buffer
++        self.create_cpu_buffer = create_cpu_buffer
++        self.quant_method = config.get("quant_method", None)
++
++        self.lazy_load = lazy_load
++        if self.lazy_load:
++            self.lazy_load_file = lazy_load_path
++        else:
++            self.lazy_load_file = None
++
++        self.compute_phases = WeightModuleList(
++            [
++                LingBotSelfAttention(
++                    block_index,
++                    block_prefix,
++                    task,
++                    mm_type,
++                    config,
++                    create_cuda_buffer,
++                    create_cpu_buffer,
++                    self.lazy_load,
++                    self.lazy_load_file,
++                    lora_path,
++                ),
++                WanCrossAttention(
++                    block_index,
++                    block_prefix,
++                    task,
++                    mm_type,
++                    config,
++                    create_cuda_buffer,
++                    create_cpu_buffer,
++                    self.lazy_load,
++                    self.lazy_load_file,
++                    lora_path,
++                ),
++                WanFFN(
++                    block_index,
++                    block_prefix,
++                    task,
++                    mm_type,
++                    config,
++                    create_cuda_buffer,
++                    create_cpu_buffer,
++                    self.lazy_load,
++                    self.lazy_load_file,
++                    lora_path,
++                ),
++            ]
++        )
++
++        self.add_module("compute_phases", self.compute_phases)
++
++
++class LingBotTransformerWeights(WeightModule):
++    """Transformer weights with LingBot camera control per block."""
++
++    def __init__(self, config, lazy_load_path=None, lora_path=None):
++        super().__init__()
++        self.blocks_num = config["num_layers"]
++        self.task = config["task"]
++        self.config = config
++        self.mm_type = config.get("dit_quant_scheme", "Default")
++        if self.mm_type != "Default":
++            assert config.get("dit_quantized") is True
++        if config.get("do_mm_calib", False):
++            self.mm_type = "Calib"
++            assert not config["cpu_offload"]
++        self.lazy_load = self.config.get("lazy_load", False)
++        self.blocks = WeightModuleList(
++            [
++                LingBotAttentionBlock(
++                    block_index=i,
++                    task=self.task,
++                    mm_type=self.mm_type,
++                    config=self.config,
++                    create_cuda_buffer=False,
++                    create_cpu_buffer=False,
++                    block_prefix="blocks",
++                    lazy_load=self.lazy_load,
++                    lazy_load_path=lazy_load_path,
++                )
++                for i in range(self.blocks_num)
++            ]
++        )
++        self.register_offload_buffers(config, lazy_load_path, lora_path)
++        self.add_module("blocks", self.blocks)
++
++        # non blocks weights
++        self.register_parameter("norm", LN_WEIGHT_REGISTER["torch"]())
++        self.add_module(
++            "head",
++            MM_WEIGHT_REGISTER["Default"](
++                "head.head.weight",
++                "head.head.bias",
++                lora_prefix="diffusion_model.head",
++            ),
++        )
++        self.register_parameter("head_modulation", TENSOR_REGISTER["Default"]("head.modulation"))
++
++    def register_offload_buffers(self, config, lazy_load_path, lora_path):
++        if config["cpu_offload"]:
++            if config["offload_granularity"] == "block":
++                self.offload_blocks_num = 2
++                self.offload_block_cuda_buffers = WeightModuleList(
++                    [
++                        LingBotAttentionBlock(
++                            block_index=i,
++                            task=self.task,
++                            mm_type=self.mm_type,
++                            config=self.config,
++                            create_cuda_buffer=True,
++                            create_cpu_buffer=False,
++                            block_prefix="blocks",
++                            lazy_load=self.lazy_load,
++                            lazy_load_path=lazy_load_path,
++                        )
++                        for i in range(self.offload_blocks_num)
++                    ]
++                )
++                self.add_module("offload_block_cuda_buffers", self.offload_block_cuda_buffers)
++                self.offload_phase_cuda_buffers = None
++
++                if self.lazy_load:
++                    self.offload_block_cpu_buffers = WeightModuleList(
++                        [
++                            LingBotAttentionBlock(
++                                block_index=i,
++                                task=self.task,
++                                mm_type=self.mm_type,
++                                config=self.config,
++                                create_cuda_buffer=False,
++                                create_cpu_buffer=True,
++                                block_prefix="blocks",
++                                lazy_load=self.lazy_load,
++                                lazy_load_path=lazy_load_path,
++                            )
++                            for i in range(self.offload_blocks_num)
++                        ]
++                    )
++                    self.add_module("offload_block_cpu_buffers", self.offload_block_cpu_buffers)
++                    self.offload_phase_cpu_buffers = None
++
++            elif config["offload_granularity"] == "phase":
++                self.offload_phase_cuda_buffers = LingBotAttentionBlock(
++                    block_index=0,
++                    task=self.task,
++                    mm_type=self.mm_type,
++                    config=self.config,
++                    create_cuda_buffer=True,
++                    create_cpu_buffer=False,
++                    block_prefix="blocks",
++                    lazy_load=self.lazy_load,
++                    lazy_load_path=lazy_load_path,
++                ).compute_phases
++                self.add_module("offload_phase_cuda_buffers", self.offload_phase_cuda_buffers)
++                self.offload_block_cuda_buffers = None
++                if self.lazy_load:
++                    self.offload_phase_cpu_buffers = WeightModuleList(
++                        [
++                            LingBotAttentionBlock(
++                                block_index=i,
++                                task=self.task,
++                                mm_type=self.mm_type,
++                                config=self.config,
++                                create_cuda_buffer=False,
++                                create_cpu_buffer=True,
++                                block_prefix="blocks",
++                                lazy_load=self.lazy_load,
++                                lazy_load_path=lazy_load_path,
++                                lora_path=lora_path,
++                            ).compute_phases
++                            for i in range(2)
++                        ]
++                    )
++                    self.add_module("offload_phase_cpu_buffers", self.offload_phase_cpu_buffers)
++                    self.offload_block_cpu_buffers = None
++
++    def non_block_weights_to_cuda(self):
++        self.norm.to_cuda()
++        self.head.to_cuda()
++        self.head_modulation.to_cuda()
++
++    def non_block_weights_to_cpu(self):
++        self.norm.to_cpu()
++        self.head.to_cpu()
++        self.head_modulation.to_cpu()
+diff --git a/lightx2v/models/runners/wan/lingbot_runner.py b/lightx2v/models/runners/wan/lingbot_runner.py
+new file mode 100644
+index 0000000..1b25139
+--- /dev/null
++++ b/lightx2v/models/runners/wan/lingbot_runner.py
+@@ -0,0 +1,310 @@
++"""
++LingBot Camera Control - Runner.
++
++Registers as 'lingbot_cam_moe' model_cls. Handles:
++  - MoE dual model (high_noise + low_noise) like Wan2.2 MoE
++  - Camera control data loading (Plücker coordinates / c2ws)
++  - Uses Wan2.1 VAE (stride=[4,8,8])
++  - No CLIP encoder (use_image_encoder=False)
++"""
++
++import gc
++import json
++import math
++import os
++
++import numpy as np
++import torch
++from loguru import logger
++
++from lightx2v.models.networks.wan.lingbot_model import LingBotModel
++from lightx2v.models.runners.wan.wan_runner import WanRunner, Wan22MoeRunner, MultiModelStruct, build_wan_model_with_lora
++from lightx2v.utils.envs import *
++from lightx2v.utils.profiler import *
++from lightx2v.utils.registry_factory import RUNNER_REGISTER
++from lightx2v.utils.utils import *
++from lightx2v_platform.base.global_var import AI_DEVICE
++
++torch_device_module = getattr(torch, AI_DEVICE)
++
++
++def generate_plucker_embedding(c2ws, image_h, image_w, num_frames, fx=None, fy=None):
++    """
++    Generate Plücker ray embedding from camera-to-world matrices.
++
++    Args:
++        c2ws: (N, 4, 4) camera-to-world matrices
++        image_h: image height
++        image_w: image width
++        num_frames: number of video frames
++        fx, fy: focal lengths (default: image_w/2)
++
++    Returns:
++        plucker: (6, num_frames, image_h, image_w) Plücker embedding
++    """
++    if fx is None:
++        fx = image_w / 2.0
++    if fy is None:
++        fy = image_h / 2.0
++
++    cx = image_w / 2.0
++    cy = image_h / 2.0
++
++    # Generate pixel grid
++    u = torch.arange(image_w, dtype=torch.float32)
++    v = torch.arange(image_h, dtype=torch.float32)
++    u, v = torch.meshgrid(u, v, indexing="xy")  # (H, W)
++
++    # Pixel to camera coordinates
++    x = (u - cx) / fx
++    y = (v - cy) / fy
++    z = torch.ones_like(x)
++    dirs_cam = torch.stack([x, y, z], dim=-1)  # (H, W, 3)
++    dirs_cam = dirs_cam / dirs_cam.norm(dim=-1, keepdim=True)
++
++    plucker_list = []
++    for i in range(num_frames):
++        c2w = c2ws[i]  # (4, 4)
++        R = c2w[:3, :3]  # (3, 3)
++        T = c2w[:3, 3]   # (3,)
++
++        # Transform directions to world space
++        dirs_world = torch.einsum("ij,hwj->hwi", R, dirs_cam)  # (H, W, 3)
++        dirs_world = dirs_world / dirs_world.norm(dim=-1, keepdim=True)
++
++        # Camera origin in world space
++        origin = T.view(1, 1, 3).expand(image_h, image_w, 3)  # (H, W, 3)
++
++        # Plücker coordinates: (direction, moment) where moment = origin x direction
++        moment = torch.cross(origin, dirs_world, dim=-1)  # (H, W, 3)
++
++        # Concat direction and moment
++        plucker_frame = torch.cat([dirs_world, moment], dim=-1)  # (H, W, 6)
++        plucker_list.append(plucker_frame)
++
++    plucker = torch.stack(plucker_list, dim=0)  # (num_frames, H, W, 6)
++    plucker = plucker.permute(3, 0, 1, 2)  # (6, num_frames, H, W)
++
++    return plucker
++
++
++def load_camera_poses(action_path, num_frames):
++    """
++    Load camera poses from a JSON file or numpy file.
++
++    Supported formats:
++      - JSON: list of 4x4 matrices
++      - NPY/NPZ: numpy array of shape (N, 4, 4)
++
++    Returns:
++        c2ws: (num_frames, 4, 4) tensor
++    """
++    if action_path.endswith(".json"):
++        with open(action_path, "r") as f:
++            data = json.load(f)
++        if isinstance(data, list):
++            c2ws = torch.tensor(data, dtype=torch.float32)
++        elif isinstance(data, dict) and "c2ws" in data:
++            c2ws = torch.tensor(data["c2ws"], dtype=torch.float32)
++        else:
++            raise ValueError(f"Unsupported JSON format in {action_path}")
++    elif action_path.endswith(".npy"):
++        c2ws = torch.from_numpy(np.load(action_path)).float()
++    elif action_path.endswith(".npz"):
++        data = np.load(action_path)
++        c2ws = torch.from_numpy(data["c2ws"]).float()
++    else:
++        raise ValueError(f"Unsupported camera pose file format: {action_path}")
++
++    # Interpolate or truncate to match num_frames
++    if c2ws.shape[0] != num_frames:
++        # Simple linear interpolation along frame dimension
++        indices = torch.linspace(0, c2ws.shape[0] - 1, num_frames)
++        idx_low = indices.long().clamp(0, c2ws.shape[0] - 2)
++        idx_high = (idx_low + 1).clamp(0, c2ws.shape[0] - 1)
++        alpha = (indices - idx_low.float()).unsqueeze(-1).unsqueeze(-1)
++        c2ws = c2ws[idx_low] * (1 - alpha) + c2ws[idx_high] * alpha
++
++    return c2ws
++
++
++def generate_default_orbit_camera(num_frames, radius=3.0, elevation=0.0):
++    """
++    Generate a default orbit camera trajectory (circular orbit).
++
++    Returns:
++        c2ws: (num_frames, 4, 4) tensor
++    """
++    c2ws = []
++    for i in range(num_frames):
++        angle = 2 * math.pi * i / num_frames
++        eye = torch.tensor([
++            radius * math.cos(angle),
++            elevation,
++            radius * math.sin(angle),
++        ], dtype=torch.float32)
++
++        # Look at origin
++        forward = -eye / eye.norm()
++        up = torch.tensor([0.0, 1.0, 0.0])
++        right = torch.cross(forward, up)
++        right = right / right.norm()
++        up = torch.cross(right, forward)
++
++        c2w = torch.eye(4)
++        c2w[:3, 0] = right
++        c2w[:3, 1] = up
++        c2w[:3, 2] = -forward
++        c2w[:3, 3] = eye
++        c2ws.append(c2w)
++
++    return torch.stack(c2ws)
++
++
++@RUNNER_REGISTER("lingbot_cam_moe")
++class LingBotCamMoeRunner(Wan22MoeRunner):
++    """
++    LingBot Camera-Controlled I2V Runner with MoE (high/low noise models).
++
++    Key differences from Wan22MoeRunner:
++      - Uses LingBotModel instead of WanModel (includes cam control weights)
++      - Uses Wan2.1 VAE (stride=[4,8,8])
++      - No CLIP encoder
++      - Handles camera pose input (action_path) and generates Plücker embeddings
++    """
++
++    def __init__(self, config):
++        # Force lingbot-specific settings
++        config["use_image_encoder"] = False
++        config.setdefault("vae_stride", [4, 8, 8])
++        config.setdefault("patch_size", [1, 2, 2])
++        config.setdefault("num_channels_latents", 16)
++        config.setdefault("fps", 16)
++        super().__init__(config)
++
++    def load_transformer(self):
++        """Load dual LingBot models (high_noise + low_noise) with camera control."""
++        if not self.config.get("lazy_load", False) and not self.config.get("unload_modules", False):
++            lora_configs = self.config.get("lora_configs")
++            high_model_kwargs = {
++                "model_path": self.high_noise_model_path,
++                "config": self.config,
++                "device": self.init_device,
++                "model_type": "wan2.2_moe_high_noise",
++            }
++            low_model_kwargs = {
++                "model_path": self.low_noise_model_path,
++                "config": self.config,
++                "device": self.init_device,
++                "model_type": "wan2.2_moe_low_noise",
++            }
++            if not lora_configs:
++                high_noise_model = LingBotModel(**high_model_kwargs)
++                low_noise_model = LingBotModel(**low_model_kwargs)
++            else:
++                high_noise_model = build_wan_model_with_lora(LingBotModel, self.config, high_model_kwargs, lora_configs, model_type="high_noise_model")
++                low_noise_model = build_wan_model_with_lora(LingBotModel, self.config, low_model_kwargs, lora_configs, model_type="low_noise_model")
++
++            return MultiModelStruct([high_noise_model, low_noise_model], self.config, self.config["boundary"])
++        else:
++            model_struct = MultiModelStruct([None, None], self.config, self.config["boundary"])
++            model_struct.low_noise_model_path = self.low_noise_model_path
++            model_struct.high_noise_model_path = self.high_noise_model_path
++            model_struct.init_device = self.init_device
++            return model_struct
++
++    def load_image_encoder(self):
++        """No CLIP encoder for lingbot."""
++        return None
++
++    def get_encoder_output_i2v(self, clip_encoder_out, vae_encoder_out, text_encoder_output, img=None):
++        """Extend encoder output with camera control data."""
++        image_encoder_output = {
++            "clip_encoder_out": None,
++            "vae_encoder_out": vae_encoder_out,
++            "c2ws_hidden_states": self._c2ws_hidden_states,
++            "cam_latent": self._cam_latent,
++        }
++        return {
++            "text_encoder_output": text_encoder_output,
++            "image_encoder_output": image_encoder_output,
++        }
++
++    @ProfilingContext4DebugL2("Run Encoders")
++    def _run_input_encoder_local_i2v(self):
++        """Override to handle camera control data."""
++        img, img_ori = self.read_image_input(self.input_info.image_path)
++
++        # Run VAE encoder (Wan2.1 style - uses img tensor, not img_ori)
++        vae_encode_out, latent_shape = self.run_vae_encoder(img_ori if self.vae_encoder_need_img_original else img)
++        self.input_info.latent_shape = latent_shape
++
++        # Process camera poses
++        self._prepare_camera_control(latent_shape)
++
++        # Run text encoder
++        text_encoder_output = self.run_text_encoder(self.input_info)
++
++        torch_device_module.empty_cache()
++        gc.collect()
++
++        return self.get_encoder_output_i2v(None, vae_encode_out, text_encoder_output, img)
++
++    def _prepare_camera_control(self, latent_shape):
++        """
++        Prepare camera control embeddings from action_path or default.
++
++        Sets self._c2ws_hidden_states and self._cam_latent.
++        """
++        num_frames = self.config["target_video_length"]
++        latent_h = latent_shape[2]
++        latent_w = latent_shape[3]
++        image_h = latent_h * self.config["vae_stride"][1]
++        image_w = latent_w * self.config["vae_stride"][2]
++
++        # Get action_path from input_info
++        action_path = getattr(self.input_info, "action_path", None)
++        if action_path is None:
++            action_path = self.config.get("action_path", None)
++
++        if action_path is not None and os.path.exists(action_path):
++            logger.info(f"Loading camera poses from: {action_path}")
++            c2ws = load_camera_poses(action_path, num_frames)
++        else:
++            logger.info("No camera poses provided, using identity cameras (no camera motion)")
++            c2ws = torch.eye(4, dtype=torch.float32).unsqueeze(0).expand(num_frames, -1, -1).clone()
++
++        # Generate Plücker embedding
++        plucker = generate_plucker_embedding(c2ws, image_h, image_w, num_frames)
++        # plucker: (6, num_frames, H, W)
++
++        # Encode Plücker through VAE-like processing to get cam_latent
++        # The cam_latent should have same spatial dims as the noisy latent
++        # For simplicity, we downsample the Plücker embedding to match latent spatial dims
++        # In the official code, Plücker goes through a dedicated encoder
++        # Here we just resize to match latent dimensions
++        latent_f = (num_frames - 1) // self.config["vae_stride"][0] + 1
++        cam_latent = torch.nn.functional.interpolate(
++            plucker.unsqueeze(0),  # (1, 6, F, H, W)
++            size=(latent_f, latent_h, latent_w),
++            mode="trilinear",
++            align_corners=False,
++        ).squeeze(0).to(GET_DTYPE()).to(AI_DEVICE)
++        # cam_latent: (6, latent_f, latent_h, latent_w)
++
++        # c2ws hidden states: flatten the c2ws and project
++        # c2ws: (num_frames, 4, 4) -> (num_frames, 16)
++        c2ws_flat = c2ws.reshape(num_frames, 16).to(GET_DTYPE()).to(AI_DEVICE)
++        # Downsample to latent temporal dim
++        if num_frames != latent_f:
++            c2ws_flat = torch.nn.functional.interpolate(
++                c2ws_flat.unsqueeze(0).transpose(1, 2),  # (1, 16, num_frames)
++                size=latent_f,
++                mode="linear",
++                align_corners=False,
++            ).transpose(1, 2).squeeze(0)  # (latent_f, 16)
++
++        self._c2ws_hidden_states = c2ws_flat
++        self._cam_latent = cam_latent
++
++        logger.info(f"Camera control prepared: c2ws_hidden_states={self._c2ws_hidden_states.shape}, cam_latent={self._cam_latent.shape}")
+diff --git a/lightx2v/models/runners/wan/wan_runner.py b/lightx2v/models/runners/wan/wan_runner.py
+index b60d0f1..89c8c56 100755
+--- a/lightx2v/models/runners/wan/wan_runner.py
++++ b/lightx2v/models/runners/wan/wan_runner.py
+@@ -589,7 +589,12 @@ class Wan22MoeRunner(WanRunner):
+         else:
+             self.high_noise_model_path = os.path.join(self.config["model_path"], "high_noise_model")
+             if not os.path.isdir(self.high_noise_model_path):
+-                raise FileNotFoundError(f"High Noise Model does not find")
++                # Fallback: Diffusers format uses transformer/ instead of high_noise_model/
++                diffusers_path = os.path.join(self.config["model_path"], "transformer")
++                if os.path.isdir(diffusers_path):
++                    self.high_noise_model_path = diffusers_path
++                else:
++                    raise FileNotFoundError(f"High Noise Model not found at {self.high_noise_model_path} or {diffusers_path}")
+ 
+         if self.config.get("dit_quantized", False) and self.config.get("low_noise_quantized_ckpt", None):
+             self.low_noise_model_path = self.config["low_noise_quantized_ckpt"]
+@@ -598,7 +603,12 @@ class Wan22MoeRunner(WanRunner):
+         else:
+             self.low_noise_model_path = os.path.join(self.config["model_path"], "low_noise_model")
+             if not os.path.isdir(self.low_noise_model_path):
+-                raise FileNotFoundError(f"Low Noise Model does not find")
++                # Fallback: Diffusers format uses transformer_2/ instead of low_noise_model/
++                diffusers_path = os.path.join(self.config["model_path"], "transformer_2")
++                if os.path.isdir(diffusers_path):
++                    self.low_noise_model_path = diffusers_path
++                else:
++                    raise FileNotFoundError(f"Low Noise Model not found at {self.low_noise_model_path} or {diffusers_path}")
+ 
+     def load_transformer(self):
+         # encoder -> high_noise_model -> low_noise_model -> vae -> video_output
+diff --git a/lightx2v/utils/input_info.py b/lightx2v/utils/input_info.py
+index 3ea8c33..505bf69 100755
+--- a/lightx2v/utils/input_info.py
++++ b/lightx2v/utils/input_info.py
+@@ -35,6 +35,8 @@ class I2VInputInfo:
+     target_shape: list = field(default_factory=list)
+     # WorldPlay-specific: pose/action conditioning (optional)
+     pose: str = field(default_factory=lambda: None)
++    # LingBot camera control (optional)
++    action_path: str = field(default_factory=lambda: None)
+ 
+ 
+ @dataclass
+diff --git a/lightx2v/utils/set_config.py b/lightx2v/utils/set_config.py
+index db1d781..9513227 100755
+--- a/lightx2v/utils/set_config.py
++++ b/lightx2v/utils/set_config.py
+@@ -106,6 +106,16 @@ def auto_calc_config(config):
+                 model_config["f_patch_size"] = z_image_f_patch_size[0]
+ 
+             config.update(model_config)
++        # Diffusers config compatibility: map diffusers field names to LightX2V internal names
++        if "num_attention_heads" in config and "num_heads" not in config:
++            config["num_heads"] = config["num_attention_heads"]
++        if "attention_head_dim" in config and "dim" not in config:
++            config["dim"] = config["num_heads"] * config["attention_head_dim"]
++        if "in_channels" in config and "in_dim" not in config:
++            config["in_dim"] = config["in_channels"]
++        if "out_channels" in config and "out_dim" not in config:
++            config["out_dim"] = config["out_channels"]
++
+         # load quantized config
+         if config.get("dit_quantized_ckpt", None) is not None:
+             config_path = os.path.join(config["dit_quantized_ckpt"], "config.json")

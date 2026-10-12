@@ -1,0 +1,78 @@
+{
+  "description": "TTS Voice/Style Compare Prompts - 用于对比不同人声、情绪、播报风格和角色气质",
+  "note": "该文件面向 TTS benchmark。当前脚本实际使用每个场景中的 cosyvoice_tts.text_zh / text_en 字段。",
+  "scenarios": [
+    {
+      "id": "style_01_news_broadcast",
+      "category": "新闻播报 / News Anchor",
+      "style_focus": "专业、稳定、清晰、克制",
+      "cosyvoice_tts": {
+        "text_zh": "各位观众晚上好，欢迎收看今晚的新闻简报。今天下午，本市新一轮城市更新项目正式启动，预计将进一步改善交通接驳效率，并为周边社区带来更加完善的公共服务。",
+        "text_en": "Good evening, and welcome to tonight's news brief. This afternoon, the city's latest urban renewal project officially began, and it is expected to improve transportation efficiency and bring better public services to nearby communities."
+      }
+    },
+    {
+      "id": "style_02_documentary_narration",
+      "category": "纪录片旁白 / Documentary Narration",
+      "style_focus": "沉稳、宽松、画面感、叙述性",
+      "cosyvoice_tts": {
+        "text_zh": "清晨的海岸线被第一缕阳光轻轻唤醒，潮水一遍遍抚过礁石，留下细碎而绵长的回响。对于生活在这里的人们来说，大海不是远方的风景，而是日复一日相伴的时间。",
+        "text_en": "At dawn, the coastline is gently awakened by the first ray of sunlight. Waves wash over the rocks again and again, leaving behind a delicate and lingering echo. For the people who live here, the sea is not a distant landscape, but time itself moving beside them every day."
+      }
+    },
+    {
+      "id": "style_03_luxury_ad",
+      "category": "高端广告 / Luxury Advertisement",
+      "style_focus": "精致、轻奢、从容、自信",
+      "cosyvoice_tts": {
+        "text_zh": "真正打动人的设计，从来不是刻意张扬，而是在每一个细节里悄然流露质感。温润的触感、流畅的线条，以及恰到好处的光影，让日常也拥有值得珍藏的高级感。",
+        "text_en": "Truly compelling design is never about being loud. It reveals its character quietly through every detail. A refined touch, elegant lines, and perfectly balanced light turn even an ordinary day into something worth remembering."
+      }
+    },
+    {
+      "id": "style_04_livestream_sales",
+      "category": "直播带货 / Livestream Sales",
+      "style_focus": "热情、节奏快、感染力强、口语化",
+      "cosyvoice_tts": {
+        "text_zh": "朋友们看这里，这一款今天真的非常划算，质感和版型都远超这个价位。现在下单不仅有立减优惠，前两百名还送同系列配件，手慢真的就没有了。",
+        "text_en": "Everyone, take a look at this one. It is honestly an amazing deal today, and both the texture and fit are far beyond this price range. If you place your order now, you get an instant discount, and the first two hundred customers will receive matching accessories as well."
+      }
+    },
+    {
+      "id": "style_05_bedtime_story",
+      "category": "睡前故事 / Bedtime Story",
+      "style_focus": "温柔、陪伴感、慢节奏、抚慰情绪",
+      "cosyvoice_tts": {
+        "text_zh": "夜色慢慢落下来，小镇的灯光一盏一盏亮起。小狐狸把今天收集到的星星装进口袋，轻轻和月亮说了晚安，然后沿着熟悉的小路，安心地回到了温暖的家。",
+        "text_en": "As night slowly settles in, the lights of the little town begin to glow one by one. The little fox puts the stars collected today into a small pocket, softly says good night to the moon, and walks home along the familiar path in perfect peace."
+      }
+    },
+    {
+      "id": "style_06_anime_heroine",
+      "category": "动漫角色 / Anime Heroine",
+      "style_focus": "元气、明亮、热血、情绪起伏明显",
+      "cosyvoice_tts": {
+        "text_zh": "别小看我啊，我可是为了这一刻准备了很久！无论前面还有多少困难，我都会带着大家的期待一起冲过去，因为这一次，我们一定要赢！",
+        "text_en": "Do not underestimate me. I have been preparing for this moment for a very long time. No matter how many obstacles stand ahead, I will carry everyone's hopes with me and charge forward, because this time, we are going to win."
+      }
+    },
+    {
+      "id": "style_07_motivational_speech",
+      "category": "激励演讲 / Motivational Speech",
+      "style_focus": "坚定、鼓舞、力量感、层层推进",
+      "cosyvoice_tts": {
+        "text_zh": "也许你现在还看不到终点，但这并不代表你的努力没有意义。每一次坚持、每一次咬牙向前，都会在未来某个时刻汇聚成真正改变命运的力量。",
+        "text_en": "Maybe you still cannot see the finish line right now, but that does not mean your effort is meaningless. Every moment of persistence and every step you force yourself to take will someday gather into the power that truly changes your future."
+      }
+    },
+    {
+      "id": "style_08_customer_service",
+      "category": "客服接待 / Customer Service",
+      "style_focus": "亲切、耐心、礼貌、安抚感",
+      "cosyvoice_tts": {
+        "text_zh": "您好，感谢您的耐心等待。我已经为您核对了订单信息，当前包裹正在转运中心处理中，预计明天下午可以完成派送。如果您愿意，我也可以继续帮您跟进最新进展。",
+        "text_en": "Hello, and thank you for waiting. I have checked your order information, and your package is currently being processed at the transfer center. It is expected to be delivered by tomorrow afternoon. If you would like, I can continue to help you track the latest update as well."
+      }
+    }
+  ]
+}

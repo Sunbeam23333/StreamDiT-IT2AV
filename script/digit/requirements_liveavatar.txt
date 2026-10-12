@@ -1,0 +1,99 @@
+# ============================================================================
+# LiveAvatar 环境依赖 (适配 8×H20 95GB 服务器)
+#
+# 基础环境:
+#   conda create -n liveavatar python=3.10 -y
+#   conda activate liveavatar
+#   pip install torch==2.8.0 torchvision==0.23.0 --index-url https://download.pytorch.org/whl/cu128
+#
+# Flash Attention:
+#   H20 GPU 支持 FA2 (不支持 FA3, FA3 仅 H800/H200):
+#   pip install flash-attn==2.8.3
+#
+# 安装本文件:
+#   pip install -r requirements_liveavatar.txt
+#
+# 其他系统依赖:
+#   apt-get install -y ffmpeg
+# ============================================================================
+
+# Core
+torch>=2.4.0
+torchvision>=0.19.0
+torchaudio
+
+# Diffusion & Transformers
+diffusers>=0.31.0
+transformers>=4.49.0,<=4.51.3
+tokenizers>=0.20.3
+accelerate>=1.1.1
+peft==0.17.1
+
+# Image/Video processing
+opencv-python>=4.9.0.80
+imageio[ffmpeg]
+imageio-ffmpeg
+decord
+Pillow
+
+# Audio processing
+openai-whisper
+librosa
+pyworld
+torchaudio
+
+# TTS (用于将文本转语音)
+edge-tts
+pydub
+
+# ML utils
+numpy>=1.23.5,<2
+safetensors
+easydict
+ftfy
+tqdm
+omegaconf
+einops
+
+# DeepSpeed (多卡分布式)
+deepspeed
+
+# SAM2 (人物分割)
+sam2
+
+# InsightFace (人脸检测)
+insightface
+onnxruntime
+
+# Gradio (可选, Web UI)
+gradio
+
+# HuggingFace Hub
+huggingface_hub
+modelscope
+
+# Other
+orjson
+tensorboard
+matplotlib
+gdown
+wget
+rich
+pyarrow
+HyperPyYAML
+conformer
+hydra-core
+lightning
+inflect
+wetext
+supervision
+GitPython
+
+# DashScope API (可选, 仅 prompt extend 功能需要)
+dashscope
+
+# bitsandbytes (量化加速, 需要 CUDA 支持)
+bitsandbytes
+
+# API 调用 (生成参考人像)
+requests

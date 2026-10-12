@@ -1,0 +1,19 @@
+# StreamDiT-IT2AV third-party manifest
+# 每一行: name <TAB> group <TAB> dest <TAB> github repo <TAB> pinned commit <TAB> patch (- 表示无) <TAB> license
+# commit 均为我们实验时实际使用的版本 (由 GitHub archive 时间戳精确反查得到)
+ACE-Step	audio	utils/audio/ACE-Step	ace-step/ACE-Step	1bee4c9f5b43e30995f8d4d33b3919197ce1bd68	-	Apache-2.0
+ChatTTS	audio	utils/audio/ChatTTS	2noise/ChatTTS	c26573a61ebde14ac456d8ed4b9f96908d3dd8fa	-	AGPL-3.0 (code) / CC BY-NC 4.0 (weights)
+CosyVoice	audio	utils/audio/CosyVoice	FunAudioLLM/CosyVoice	04bcadc6340e266b4ba09f4474b4668c444aa063	-	Apache-2.0
+F5-TTS	audio	utils/audio/F5-TTS	SWivid/F5-TTS	623c96c294965be60246f9c3679298f1d466189e	-	MIT (code) / CC BY-NC 4.0 (weights)
+Matcha-TTS	audio	utils/audio/Matcha-TTS	shivammehta25/Matcha-TTS	bd4d90d93214b37f7a159cf205ae85762c2c10aa	-	MIT
+Spark-TTS	audio	utils/audio/Spark-TTS	SparkAudio/Spark-TTS	2f1ea9082400547242641f5271b6f941c9f439d1	-	Apache-2.0 (code) / CC BY-NC-SA 4.0 (weights)
+TangoFlux	audio	utils/audio/TangoFlux	declare-lab/TangoFlux	164420faa2b3f8a28bb013ccde7006422a616fc7	-	Non-commercial research (Stability AI Community License)
+fish-speech	audio	utils/audio/fish-speech	fishaudio/fish-speech	49985a34a7041bb350338735e2cb3291eef045d4	-	Fish Audio Research License
+HunyuanVideo-1.5	video	utils/video/HunyuanVideo-1.5	Tencent-Hunyuan/HunyuanVideo-1.5	2641c0de73da0a2d9682fed24af2c0a516527cc1	-	Tencent Hunyuan Community License
+LatentSync	video	utils/video/LatentSync	bytedance/LatentSync	a229c3948406bc2cf6eaf4873e662e70c6a04746	LatentSync.patch	Apache-2.0
+LiveAvatar	video	utils/video/LiveAvatar	Alibaba-Quark/LiveAvatar	775e3630b9ac956f3ed3be4c8d1932c5a15d7677	LiveAvatar.patch	Apache-2.0
+daVinci-MagiHuman	video	utils/video/daVinci-MagiHuman	GAIR-NLP/daVinci-MagiHuman	bd8196473342c58ddd5786af07d8b6a5becfed2b	daVinci-MagiHuman.patch	Apache-2.0
+LightX2V	video	utils/video/LightX2V-main	ModelTC/LightX2V	cffcc57b9e8e40091a8d1c19c7957ecd813d3e26	LightX2V.patch	Apache-2.0
+MagiCompiler	optional	utils/video/MagiCompiler	SandAI-org/MagiCompiler	b4cc31613de6cad6538d2769744deb92d81d9834	-	Apache-2.0
+diffusers	image	utils/image/diffusers	huggingface/diffusers	07a63e197e10860a470576cf4f610381b31a4dd7	-	Apache-2.0
+xDiT	image	utils/image/xDiT	xdit-project/xDiT	84813c979c68264c293cd73cbcb72ec60186d8c8	-	Apache-2.0

@@ -1,0 +1,801 @@
+diff --git a/generate_ref_portraits.py b/generate_ref_portraits.py
+new file mode 100644
+index 0000000..c74a058
+--- /dev/null
++++ b/generate_ref_portraits.py
+@@ -0,0 +1,281 @@
++#!/usr/bin/env python3
++# -*- coding: utf-8 -*-
++"""
++为数字人视频生成参考人像图片
++使用 Nano-Banana-Pro (gemini-3-pro-image) 模型生成高质量肖像
++
++用法:
++    python generate_ref_portraits.py \
++        --tsv $IT2AV_WORKSPACE/data/text/digit/digit_test.tsv \
++        --output-dir $IT2AV_WORKSPACE/data/pics/digit/ \
++        --num-portraits 2   # 每个样本生成几张候选人像 (默认 2, 选最好的)
++"""
++
++import argparse
++import base64
++import csv
++import json
++import os
++import re
++import sys
++import time
++from datetime import datetime
++from pathlib import Path
++from typing import Optional
++
++import requests
++
++
++# ================= 配置区域 =================
++ENV_VENUS_OPENAPI_SECRET_ID = os.environ.get(
++    'ENV_VENUS_OPENAPI_SECRET_ID',
++    ''
++)
++PROXY_TOKEN = ENV_VENUS_OPENAPI_SECRET_ID + "@" + os.environ.get("VENUS_APP_GROUP_ID", "")
++API_URL = os.environ.get("VENUS_API_BASE", "").rstrip("/") + "/llmproxy/chat/completions"
++MODEL_NAME = "gemini-3-pro-image"
++
++
++# ================= 人像 Prompt 模板 =================
++# 根据播报内容的主题，生成不同风格的新闻主播/播报员人像
++PORTRAIT_PROMPTS = [
++    # 男性新闻主播
++    (
++        "A professional Chinese male news anchor in his 30s, wearing a formal dark navy suit "
++        "with a red tie, sitting at a modern news desk. He has a confident, warm smile with "
++        "neat short black hair. Professional studio lighting, clean background with subtle "
++        "gradient. Upper body portrait, facing the camera directly. "
++        "Photorealistic, high resolution, 4K quality, sharp details."
++    ),
++    # 女性新闻主播
++    (
++        "A professional Chinese female news anchor in her late 20s, wearing an elegant "
++        "burgundy blazer over a white blouse, sitting at a modern broadcast studio desk. "
++        "She has a warm, approachable smile with shoulder-length straight black hair. "
++        "Professional studio lighting, clean background. Upper body portrait, facing camera. "
++        "Photorealistic, high resolution, 4K quality, sharp details."
++    ),
++    # 健康科普主播 (适合羊肉/健康类话题)
++    (
++        "A friendly Chinese female health expert in her early 30s, wearing a clean white "
++        "lab coat over a light blue shirt, standing in a modern medical office. She has "
++        "a gentle, trustworthy smile with her hair tied in a neat ponytail. Warm natural "
++        "lighting, bookshelf background with medical books. Upper body portrait, facing camera. "
++        "Photorealistic, high resolution, 4K quality."
++    ),
++]
++
++
++def call_banana_api(messages: list, max_tokens: int = 4000) -> dict:
++    """调用 Nano-Banana-Pro API 生成图片"""
++    payload = {
++        'model': MODEL_NAME,
++        'messages': messages,
++        'max_tokens': max_tokens
++    }
++    headers = {
++        'Content-Type': 'application/json',
++        'Authorization': f'Bearer {PROXY_TOKEN}'
++    }
++
++    try:
++        response = requests.post(API_URL, headers=headers, data=json.dumps(payload), timeout=120)
++        if response.status_code == 200:
++            return {"success": True, "data": response.json()}
++        else:
++            return {"success": False, "error": f"HTTP {response.status_code}: {response.text}"}
++    except Exception as e:
++        return {"success": False, "error": str(e)}
++
++
++def extract_and_save_images(response_data: dict, output_path: str) -> list:
++    """从 API 响应中提取并保存图片"""
++    saved_images = []
++    try:
++        message = response_data['choices'][0]['message']
++        content = message.get('content', [])
++
++        if isinstance(content, list):
++            for idx, item in enumerate(content):
++                if item.get('type') == 'venus_multimodal_url':
++                    multimodal_data = item.get('venus_multimodal_url', {})
++                    image_url = multimodal_data.get('url', '')
++                    mime_type = multimodal_data.get('mimeType', 'image/png')
++
++                    if image_url.startswith('data:'):
++                        ext = 'png' if 'png' in mime_type else 'jpg'
++                        if idx == 0:
++                            save_path = output_path
++                        else:
++                            base, orig_ext = os.path.splitext(output_path)
++                            save_path = f"{base}_{idx}{orig_ext}"
++
++                        # 移除 data:image 前缀
++                        img_data = image_url.split(',', 1)[1]
++                        with open(save_path, 'wb') as f:
++                            f.write(base64.b64decode(img_data))
++
++                        file_size = os.path.getsize(save_path) / 1024
++                        print(f"    ✅ 图片已保存: {save_path} ({file_size:.1f} KB)")
++                        saved_images.append(save_path)
++        elif isinstance(content, str):
++            print(f"    ⚠️  模型返回文本 (非图片): {content[:200]}...")
++
++    except Exception as e:
++        print(f"    ❌ 提取图片失败: {e}")
++
++    return saved_images
++
++
++def generate_portrait(prompt: str, output_path: str) -> list:
++    """生成一张参考人像"""
++    messages = [
++        {
++            'role': 'user',
++            'content': [
++                {
++                    'type': 'text',
++                    'text': f"Generate an image based on this description:\n{prompt}"
++                }
++            ]
++        }
++    ]
++
++    result = call_banana_api(messages, max_tokens=4000)
++    if result["success"]:
++        return extract_and_save_images(result['data'], output_path)
++    else:
++        print(f"    ❌ API 调用失败: {result['error']}")
++        return []
++
++
++def load_tsv_samples(tsv_path: str) -> list:
++    """加载 TSV 测试样本"""
++    samples = []
++    with open(tsv_path, 'r', encoding='utf-8') as f:
++        reader = csv.DictReader(f, delimiter='\t')
++        for idx, row in enumerate(reader):
++            samples.append({
++                'id': idx,
++                'title': row.get('文章标题', '').strip(),
++                'url': row.get('新闻链接', '').strip(),
++                'text': row.get('播客文本', '').strip(),
++            })
++    return samples
++
++
++def select_prompt_for_topic(title: str, idx: int) -> tuple:
++    """根据话题选择合适的人像 prompt"""
++    title_lower = title.lower()
++
++    # 健康/养生类
++    if any(kw in title_lower for kw in ['羊肉', '高血压', '健康', '养生', '饮食', '研究发现']):
++        prompt = PORTRAIT_PROMPTS[2]  # 健康科普主播
++        style = "health_expert"
++    # 交替使用男女主播
++    elif idx % 2 == 0:
++        prompt = PORTRAIT_PROMPTS[0]  # 男性新闻主播
++        style = "male_anchor"
++    else:
++        prompt = PORTRAIT_PROMPTS[1]  # 女性新闻主播
++        style = "female_anchor"
++
++    return prompt, style
++
++
++def main():
++    parser = argparse.ArgumentParser(description="为数字人视频生成参考人像图片")
++    parser.add_argument(
++        "--tsv",
++        type=str,
++        default=os.path.join(os.path.expanduser(os.environ.get("IT2AV_WORKSPACE", "~/it2av_workspace")), "data/text/digit/digit_test.tsv"),
++        help="TSV 样本文件路径",
++    )
++    parser.add_argument(
++        "--output-dir",
++        type=str,
++        default=os.path.join(os.path.expanduser(os.environ.get("IT2AV_WORKSPACE", "~/it2av_workspace")), "data/pics/digit/"),
++        help="人像图片输出目录",
++    )
++    parser.add_argument(
++        "--num-portraits",
++        type=int,
++        default=2,
++        help="每个样本生成几张候选人像 (默认 2)",
++    )
++    args = parser.parse_args()
++
++    # 确保输出目录存在
++    os.makedirs(args.output_dir, exist_ok=True)
++
++    # 加载测试样本
++    print("=" * 70)
++    print("🎨 数字人参考人像生成器")
++    print(f"   模型: {MODEL_NAME}")
++    print(f"   输入: {args.tsv}")
++    print(f"   输出: {args.output_dir}")
++    print(f"   每样本候选数: {args.num_portraits}")
++    print("=" * 70)
++
++    samples = load_tsv_samples(args.tsv)
++    print(f"\n📄 加载了 {len(samples)} 个样本:")
++    for s in samples:
++        print(f"   [{s['id']}] {s['title'][:60]}...")
++
++    total_generated = 0
++
++    for sample in samples:
++        sid = sample['id']
++        title = sample['title']
++        # 清理文件名
++        safe_title = re.sub(r'[^\w\u4e00-\u9fff]', '_', title)[:30]
++
++        print(f"\n{'='*70}")
++        print(f"📝 样本 {sid}: {title[:60]}...")
++        print(f"{'='*70}")
++
++        prompt, style = select_prompt_for_topic(title, sid)
++        print(f"   风格: {style}")
++        print(f"   Prompt: {prompt[:100]}...")
++
++        for n in range(args.num_portraits):
++            output_filename = f"portrait_{sid}_{style}_{n}.png"
++            output_path = os.path.join(args.output_dir, output_filename)
++
++            if os.path.exists(output_path) and os.path.getsize(output_path) > 1024:
++                print(f"\n  [{n+1}/{args.num_portraits}] ⏭️  已存在: {output_filename}")
++                total_generated += 1
++                continue
++
++            print(f"\n  [{n+1}/{args.num_portraits}] ⏳ 生成中...")
++            saved = generate_portrait(prompt, output_path)
++            if saved:
++                total_generated += len(saved)
++            else:
++                print(f"    ⚠️  生成失败，3秒后重试...")
++                time.sleep(3)
++                saved = generate_portrait(prompt, output_path)
++                if saved:
++                    total_generated += len(saved)
++
++            # API 限流保护
++            time.sleep(2)
++
++    print(f"\n{'='*70}")
++    print(f"✅ 人像生成完成!")
++    print(f"   总计生成: {total_generated} 张图片")
++    print(f"   输出目录: {args.output_dir}")
++    print(f"{'='*70}")
++
++    # 打印每个样本的推荐人像
++    print(f"\n📋 各样本对应人像:")
++    for sample in samples:
++        sid = sample['id']
++        _, style = select_prompt_for_topic(sample['title'], sid)
++        portrait_path = os.path.join(args.output_dir, f"portrait_{sid}_{style}_0.png")
++        exists = "✅" if os.path.exists(portrait_path) else "❌"
++        print(f"   [{sid}] {exists} {portrait_path}")
++
++
++if __name__ == "__main__":
++    main()
+diff --git a/liveavatar/models/wan/causal_s2v_pipeline_tpp.py b/liveavatar/models/wan/causal_s2v_pipeline_tpp.py
+index 1c2c429..9fd95cc 100644
+--- a/liveavatar/models/wan/causal_s2v_pipeline_tpp.py
++++ b/liveavatar/models/wan/causal_s2v_pipeline_tpp.py
+@@ -602,20 +602,25 @@ class WanS2V:
+             HEIGHT, WIDTH, target_area=max_area)
+         return (HEIGHT, WIDTH)
+ 
+-    def _initialize_kv_cache(self, batch_size, dtype, device, kv_cache_size=13500):
++    def _initialize_kv_cache(self, batch_size, dtype, device, kv_cache_size=13500, cond_cache_size=None):
+         """
+         Initialize a Per-GPU KV cache for the Wan model.
+         gpu_id : "1","2","3","4"
++        cond_cache_size: size for cond_k/cond_v buffers (auto-calculated from kv_cache_size if None)
+         """
++        # cond token 数 ≈ H/8 * W/8 * (一些因子), 经验上约为 kv_cache_size 的 0.65 倍
++        # 720*400 → ~2640, 1280*720 → ~8800
++        if cond_cache_size is None:
++            cond_cache_size = int(kv_cache_size * 0.7) + 500  # 留余量
+         kv_cache1 = []
+ 
+         for _ in range(self.noise_model.num_layers):
+             kv_cache1.append({
+                 "k": torch.zeros([batch_size, kv_cache_size, 40, 128], dtype=dtype, device=device),
+                 "v": torch.zeros([batch_size, kv_cache_size, 40, 128], dtype=dtype, device=device),
+-                "cond_k": torch.zeros([batch_size, 3000, 40, 128], dtype=dtype, device=device), #hard-coded for 720*400 resolution
+-                "cond_v": torch.zeros([batch_size, 3000, 40, 128], dtype=dtype, device=device), #hard-coded for 720*400 resolution
+-                "cond_end": torch.tensor([0], dtype=torch.long, device=device) #dynamically updated 2640
++                "cond_k": torch.zeros([batch_size, cond_cache_size, 40, 128], dtype=dtype, device=device),
++                "cond_v": torch.zeros([batch_size, cond_cache_size, 40, 128], dtype=dtype, device=device),
++                "cond_end": torch.tensor([0], dtype=torch.long, device=device)
+             })
+ 
+         self.kv_cache1 = kv_cache1  # always store the clean cache
+diff --git a/liveavatar/models/wan/wan_2_2/utils/prompt_extend.py b/liveavatar/models/wan/wan_2_2/utils/prompt_extend.py
+index 9d40d9c..fb552a8 100644
+--- a/liveavatar/models/wan/wan_2_2/utils/prompt_extend.py
++++ b/liveavatar/models/wan/wan_2_2/utils/prompt_extend.py
+@@ -10,7 +10,10 @@ from dataclasses import dataclass
+ from http import HTTPStatus
+ from typing import Optional, Union
+ 
+-import dashscope
++try:
++    import dashscope
++except ImportError:
++    dashscope = None  # lazy: only needed for DashScopePromptExpander
+ import torch
+ from PIL import Image
+ 
+@@ -134,6 +137,11 @@ class DashScopePromptExpander(PromptExpander):
+             is_vl: A flag indicating whether the task involves visual-language processing.
+             **kwargs: Additional keyword arguments that can be passed to the function or method.
+         '''
++        if dashscope is None:
++            raise ImportError(
++                "dashscope is required for DashScopePromptExpander. "
++                "Install it with: pip install dashscope"
++            )
+         if model_name is None:
+             model_name = 'qwen-plus' if not is_vl else 'qwen-vl-max'
+         super().__init__(model_name, task, is_vl, **kwargs)
+diff --git a/liveavatar/models/wan/wan_base/utils/prompt_extend.py b/liveavatar/models/wan/wan_base/utils/prompt_extend.py
+index a016193..ddd1c73 100644
+--- a/liveavatar/models/wan/wan_base/utils/prompt_extend.py
++++ b/liveavatar/models/wan/wan_base/utils/prompt_extend.py
+@@ -9,7 +9,10 @@ from dataclasses import dataclass
+ from http import HTTPStatus
+ from typing import Optional, Union
+ 
+-import dashscope
++try:
++    import dashscope
++except ImportError:
++    dashscope = None  # lazy: only needed for DashScopePromptExpander
+ import torch
+ from PIL import Image
+ 
+@@ -172,6 +175,11 @@ class DashScopePromptExpander(PromptExpander):
+             is_vl: A flag indicating whether the task involves visual-language processing.
+             **kwargs: Additional keyword arguments that can be passed to the function or method.
+         '''
++        if dashscope is None:
++            raise ImportError(
++                "dashscope is required for DashScopePromptExpander. "
++                "Install it with: pip install dashscope"
++            )
+         if model_name is None:
+             model_name = 'qwen-plus' if not is_vl else 'qwen-vl-max'
+         super().__init__(model_name, is_vl, **kwargs)
+diff --git a/prepare_digit_samples.py b/prepare_digit_samples.py
+new file mode 100644
+index 0000000..9551fc2
+--- /dev/null
++++ b/prepare_digit_samples.py
+@@ -0,0 +1,405 @@
++#!/usr/bin/env python3
++# -*- coding: utf-8 -*-
++"""
++数字人视频样本准备脚本
++1. 解析 digit_test.tsv 获取播客文本
++2. 使用 CosyVoice TTS 将文本转为中文语音 (WAV)
++3. 生成 LiveAvatar batch_eval 格式的 JSON 样本列表
++
++默认使用 CosyVoice2 (更稳定), CosyVoice3 存在已知质量问题 (GitHub Issue #1703)
++
++用法:
++    # 需要设置环境变量 CUDA_VISIBLE_DEVICES 指定 TTS 用的 GPU
++    CUDA_VISIBLE_DEVICES=5 python prepare_digit_samples.py \
++        --tsv $IT2AV_WORKSPACE/data/text/digit/digit_test.tsv \
++        --portrait-dir $IT2AV_WORKSPACE/data/pics/digit/ \
++        --output-dir $IT2AV_WORKSPACE/data/digit_samples/ \
++        --cosyvoice-model $IT2AV_LOCAL_ROOT/models/Audio/CosyVoice2-0.5B \
++        --cosyvoice-code $IT2AV_CODE_ROOT/utils/audio/CosyVoice \
++        --max-duration 600
++
++依赖:
++    pip install pyworld torchaudio
++    CosyVoice 模型 + 代码已预先同步到本地盘
++"""
++
++import argparse
++import csv
++import gc
++import json
++import os
++import re
++import subprocess
++import sys
++from pathlib import Path
++
++
++# ============================================================================
++# CosyVoice TTS
++# ============================================================================
++_cosyvoice_model = None  # 全局缓存，避免重复加载
++_cosyvoice_is_v3 = False  # 标记是否为 CosyVoice3
++
++
++def ensure_cosyvoice_ttsfrd_resource(model_dir: str, cosyvoice_code: str):
++    """确保 CosyVoice 能在预期位置找到 `CosyVoice-ttsfrd/resource`。"""
++    ttsfrd_dir = os.path.join(os.path.dirname(model_dir), "CosyVoice-ttsfrd")
++    resource_src = os.path.join(ttsfrd_dir, "resource")
++    resource_dst = os.path.join(cosyvoice_code, "pretrained_models", "CosyVoice-ttsfrd", "resource")
++
++    if not os.path.isdir(resource_src):
++        print(f"    ⚠️  未找到 ttsfrd resource: {resource_src}")
++        return False
++
++    os.makedirs(os.path.dirname(resource_dst), exist_ok=True)
++    if os.path.islink(resource_dst) and os.path.realpath(resource_dst) == os.path.realpath(resource_src):
++        print(f"    ✅ ttsfrd 资源已就绪: {resource_dst}")
++        return True
++
++    if os.path.lexists(resource_dst):
++        if os.path.islink(resource_dst):
++            os.unlink(resource_dst)
++        elif os.path.isdir(resource_dst) and not os.listdir(resource_dst):
++            os.rmdir(resource_dst)
++        else:
++            print(f"    ⚠️  保留已有非空 frontend 目录: {resource_dst}")
++            return True
++
++    os.symlink(resource_src, resource_dst)
++    print(f"    🔗 挂载 ttsfrd 资源: {resource_dst} -> {resource_src}")
++    return True
++
++
++def init_cosyvoice(model_dir: str, cosyvoice_code: str):
++    """初始化 CosyVoice 模型 (只加载一次, 自动检测 v2/v3)"""
++    global _cosyvoice_model, _cosyvoice_is_v3
++
++    if _cosyvoice_model is not None:
++        return _cosyvoice_model
++
++    # 添加 CosyVoice 代码到 sys.path
++    if cosyvoice_code not in sys.path:
++        sys.path.insert(0, cosyvoice_code)
++    matcha_path = os.path.join(cosyvoice_code, "third_party", "Matcha-TTS")
++    if os.path.exists(matcha_path) and matcha_path not in sys.path:
++        sys.path.insert(0, matcha_path)
++
++    # 自动检测模型版本
++    _cosyvoice_is_v3 = os.path.exists(os.path.join(model_dir, "cosyvoice3.yaml"))
++    version_name = "CosyVoice3" if _cosyvoice_is_v3 else "CosyVoice2"
++    ensure_cosyvoice_ttsfrd_resource(model_dir, cosyvoice_code)
++    print(f"    📦 加载 {version_name} 模型: {model_dir}")
++
++    from cosyvoice.cli.cosyvoice import AutoModel
++    _cosyvoice_model = AutoModel(model_dir=model_dir, fp16=False)
++    print(f"    ✅ {version_name} 模型加载完成 (sample_rate={_cosyvoice_model.sample_rate})")
++    print(f"    ℹ️  frontend: {getattr(_cosyvoice_model.frontend, 'text_frontend', 'unknown')}")
++    try:
++        import onnxruntime
++        print(f"    ℹ️  onnxruntime={onnxruntime.__version__}, providers={onnxruntime.get_available_providers()}")
++    except Exception as e:
++        print(f"    ⚠️  无法读取 onnxruntime 信息: {e}")
++    if not _cosyvoice_is_v3:
++        print("    ℹ️  CosyVoice2 将使用 text_frontend=False (官方推荐 zero-shot 方式)")
++    return _cosyvoice_model
++
++
++def text_to_audio_cosyvoice(text: str, output_path: str, cosyvoice_code: str):
++    """
++    使用 CosyVoice 将中文文本转为语音 (WAV)
++
++    Args:
++        text: 要转换的文本
++        output_path: 输出音频文件路径 (wav)
++        cosyvoice_code: CosyVoice 代码目录 (用于找参考音频)
++    """
++    import torch
++    import torchaudio
++
++    cosyvoice = _cosyvoice_model
++    assert cosyvoice is not None, "CosyVoice 模型未初始化，请先调用 init_cosyvoice()"
++
++    ref_audio = os.path.join(cosyvoice_code, "asset", "zero_shot_prompt.wav")
++    # prompt_text 格式:
++    #   CosyVoice3: 需要 "You are a helpful assistant.<|endofprompt|>" 前缀
++    #   CosyVoice2: 不需要前缀, 直接用参考音频对应文本
++    if _cosyvoice_is_v3:
++        prompt_text = "You are a helpful assistant.<|endofprompt|>希望你以后能够做的比我还好呦。"
++    else:
++        prompt_text = "希望你以后能够做的比我还好呦。"
++
++    # CosyVoice 可能返回多个 chunk，拼接它们
++    all_speech = []
++    use_text_frontend = _cosyvoice_is_v3
++    try:
++        for i, chunk in enumerate(cosyvoice.inference_zero_shot(
++            text, prompt_text, ref_audio, stream=False,
++            text_frontend=use_text_frontend
++        )):
++            all_speech.append(chunk["tts_speech"])
++    except Exception as e:
++        print(f"    ⚠️  zero_shot 失败: {e}, 尝试 cross_lingual 模式...")
++        all_speech = []
++        cross_prefix = "You are a helpful assistant.<|endofprompt|>" if _cosyvoice_is_v3 else ""
++        for i, chunk in enumerate(cosyvoice.inference_cross_lingual(
++            f"{cross_prefix}{text}",
++            ref_audio, stream=False,
++            text_frontend=use_text_frontend
++        )):
++            all_speech.append(chunk["tts_speech"])
++
++    if all_speech:
++        speech = torch.cat(all_speech, dim=-1)
++        torchaudio.save(output_path, speech, cosyvoice.sample_rate)
++        print(f"    ✅ TTS 完成: {output_path}")
++    else:
++        print(f"    ❌ TTS 未生成任何音频!")
++
++    # 释放缓存
++    gc.collect()
++    torch.cuda.empty_cache()
++    return output_path
++
++
++def get_audio_duration(audio_path: str) -> float:
++    """获取音频时长 (秒)"""
++    try:
++        result = subprocess.run(
++            [
++                "ffprobe", "-v", "error",
++                "-show_entries", "format=duration",
++                "-of", "default=noprint_wrappers=1:nokey=1",
++                audio_path,
++            ],
++            capture_output=True, text=True, check=True,
++        )
++        return float(result.stdout.strip())
++    except Exception:
++        # fallback: 用 pydub
++        try:
++            from pydub import AudioSegment
++            audio = AudioSegment.from_file(audio_path)
++            return len(audio) / 1000.0
++        except Exception:
++            return 0.0
++
++
++def truncate_text_to_duration(text: str, max_duration_sec: float, chars_per_sec: float = 4.5) -> str:
++    """
++    截断文本使其不超过目标时长
++    中文 TTS 大约 4~5 字/秒
++    """
++    max_chars = int(max_duration_sec * chars_per_sec)
++    if len(text) <= max_chars:
++        return text
++
++    # 在句号/感叹号/问号处截断
++    truncated = text[:max_chars]
++    last_punct = max(
++        truncated.rfind('。'),
++        truncated.rfind('！'),
++        truncated.rfind('？'),
++        truncated.rfind('!'),
++        truncated.rfind('?'),
++    )
++    if last_punct > max_chars * 0.5:
++        truncated = truncated[:last_punct + 1]
++
++    return truncated
++
++
++def load_tsv_samples(tsv_path: str) -> list:
++    """加载 TSV 样本"""
++    samples = []
++    with open(tsv_path, 'r', encoding='utf-8') as f:
++        reader = csv.DictReader(f, delimiter='\t')
++        for idx, row in enumerate(reader):
++            samples.append({
++                'id': idx,
++                'title': row.get('文章标题', '').strip(),
++                'url': row.get('新闻链接', '').strip(),
++                'text': row.get('播客文本', '').strip(),
++            })
++    return samples
++
++
++def select_portrait_for_sample(sample_id: int, title: str, portrait_dir: str) -> str:
++    """为样本选择对应的参考人像"""
++    # 优先匹配 generate_ref_portraits.py 生成的文件名模式
++    title_lower = title.lower()
++
++    if any(kw in title_lower for kw in ['羊肉', '高血压', '健康', '养生', '饮食', '研究发现']):
++        style = "health_expert"
++    elif sample_id % 2 == 0:
++        style = "male_anchor"
++    else:
++        style = "female_anchor"
++
++    portrait_path = os.path.join(portrait_dir, f"portrait_{sample_id}_{style}_0.png")
++    if os.path.exists(portrait_path):
++        return portrait_path
++
++    # fallback: 查找同 sample_id 的任意人像
++    for f in os.listdir(portrait_dir):
++        if f.startswith(f"portrait_{sample_id}_") and f.endswith('.png'):
++            return os.path.join(portrait_dir, f)
++
++    # fallback: 使用第一张可用人像
++    for f in sorted(os.listdir(portrait_dir)):
++        if f.endswith('.png') or f.endswith('.jpg'):
++            return os.path.join(portrait_dir, f)
++
++    return ""
++
++
++def main():
++    parser = argparse.ArgumentParser(description="数字人视频样本准备 (CosyVoice TTS)")
++    parser.add_argument(
++        "--tsv",
++        type=str,
++        default=os.path.join(os.path.expanduser(os.environ.get("IT2AV_WORKSPACE", "~/it2av_workspace")), "data/text/digit/digit_test.tsv"),
++        help="TSV 样本文件路径",
++    )
++    parser.add_argument(
++        "--portrait-dir",
++        type=str,
++        default=os.path.join(os.path.expanduser(os.environ.get("IT2AV_WORKSPACE", "~/it2av_workspace")), "data/pics/digit/"),
++        help="人像图片目录",
++    )
++    parser.add_argument(
++        "--output-dir",
++        type=str,
++        default=os.path.join(os.path.expanduser(os.environ.get("IT2AV_WORKSPACE", "~/it2av_workspace")), "data/digit_samples/"),
++        help="输出目录 (音频 + JSON 样本列表)",
++    )
++    parser.add_argument(
++        "--max-duration",
++        type=float,
++        default=600.0,
++        help="每个视频最大时长 (秒), 默认 600 (10分钟)",
++    )
++    parser.add_argument(
++        "--cosyvoice-model",
++        type=str,
++        default=os.path.join(os.environ.get("IT2AV_LOCAL_ROOT", "/tmp/it2av"), "models/Audio/CosyVoice2-0.5B"),
++        help="CosyVoice 模型路径 (本地高速盘, 默认 CosyVoice2 更稳定)",
++    )
++    parser.add_argument(
++        "--cosyvoice-code",
++        type=str,
++        default=os.path.join(os.environ.get("IT2AV_CODE_ROOT", "."), "utils/audio/CosyVoice"),
++        help="CosyVoice 代码目录",
++    )
++    args = parser.parse_args()
++
++    os.makedirs(args.output_dir, exist_ok=True)
++    audio_dir = os.path.join(args.output_dir, "audio")
++    os.makedirs(audio_dir, exist_ok=True)
++
++    print("=" * 70)
++    print("🎙️  数字人视频样本准备器 (CosyVoice TTS)")
++    print(f"   输入: {args.tsv}")
++    print(f"   人像: {args.portrait_dir}")
++    print(f"   输出: {args.output_dir}")
++    print(f"   最大时长: {args.max_duration}s ({args.max_duration/60:.1f}min)")
++    print(f"   CosyVoice 模型: {args.cosyvoice_model}")
++    print("=" * 70)
++
++    samples = load_tsv_samples(args.tsv)
++    print(f"\n📄 加载了 {len(samples)} 个样本")
++
++    # 初始化 CosyVoice 模型 (只加载一次)
++    cosyvoice_initialized = False
++
++    # 生成样本列表 (LiveAvatar batch_eval 格式)
++    sample_list = {}
++
++    for sample in samples:
++        sid = sample['id']
++        title = sample['title']
++        text = sample['text']
++
++        print(f"\n{'='*70}")
++        print(f"📝 样本 {sid}: {title[:50]}...")
++        print(f"   原始文本长度: {len(text)} 字")
++        print(f"{'='*70}")
++
++        # 1. 截断文本到目标时长
++        truncated_text = truncate_text_to_duration(text, args.max_duration)
++        if len(truncated_text) < len(text):
++            print(f"   📏 截断到 {len(truncated_text)} 字 (约 {len(truncated_text)/4.5:.0f}s)")
++        else:
++            print(f"   📏 文本完整保留 (约 {len(text)/4.5:.0f}s)")
++
++        # 2. TTS 生成音频 (CosyVoice)
++        wav_path = os.path.join(audio_dir, f"sample_{sid}.wav")
++
++        if os.path.exists(wav_path) and os.path.getsize(wav_path) > 1024:
++            print(f"   ⏭️  音频已存在: {wav_path}")
++        else:
++            # 延迟初始化模型 (只在真正需要生成时才加载)
++            if not cosyvoice_initialized:
++                init_cosyvoice(args.cosyvoice_model, args.cosyvoice_code)
++                cosyvoice_initialized = True
++
++            print(f"   🎤 CosyVoice TTS 生成中...")
++            text_to_audio_cosyvoice(truncated_text, wav_path, args.cosyvoice_code)
++
++        # 获取音频时长
++        duration = get_audio_duration(wav_path)
++        print(f"   ⏱️  音频时长: {duration:.1f}s ({duration/60:.1f}min)")
++
++        # 3. 选择参考人像
++        portrait_path = select_portrait_for_sample(sid, title, args.portrait_dir)
++        if portrait_path:
++            print(f"   🖼️  参考人像: {portrait_path}")
++        else:
++            print(f"   ⚠️  未找到参考人像! 请先运行 generate_ref_portraits.py")
++
++        # 4. 计算需要的 clip 数
++        # LiveAvatar s2v-14B: sample_fps=25, infer_frames=48
++        fps = 25
++        frames_per_clip = 48
++        clip_duration = frames_per_clip / fps  # 1.92 秒
++        num_clips = max(1, int(duration / clip_duration) + 1)
++
++        # 5. 生成 prompt (描述人物外观)
++        safe_title = re.sub(r'[^\w\u4e00-\u9fff]', '_', title)[:30]
++        prompt = (
++            "A professional Chinese news anchor is speaking to the camera in a modern "
++            "broadcast studio. The anchor maintains eye contact with the camera, with natural "
++            "facial expressions and subtle head movements while speaking. Professional studio "
++            "lighting with a clean, modern background."
++        )
++
++        sample_list[f"sample_{sid}_{safe_title}"] = {
++            "prompt": prompt,
++            "image": portrait_path,
++            "audio": wav_path,
++            "num_clip": num_clips,
++            "title": title,
++            "duration_sec": round(duration, 1),
++        }
++
++    # 保存 JSON 样本列表
++    json_path = os.path.join(args.output_dir, "digit_sample_list.json")
++    with open(json_path, 'w', encoding='utf-8') as f:
++        json.dump(sample_list, f, indent=2, ensure_ascii=False)
++    print(f"\n{'='*70}")
++    print(f"✅ 样本准备完成!")
++    print(f"   样本列表: {json_path}")
++    print(f"   音频目录: {audio_dir}")
++    print(f"   总样本数: {len(sample_list)}")
++
++    total_duration = sum(s['duration_sec'] for s in sample_list.values())
++    total_clips = sum(s['num_clip'] for s in sample_list.values())
++    print(f"   总时长: {total_duration:.0f}s ({total_duration/60:.1f}min)")
++    print(f"   总 clip 数: {total_clips}")
++    print(f"\n📋 样本摘要:")
++    for name, info in sample_list.items():
++        print(f"   {name}: {info['duration_sec']}s, {info['num_clip']} clips")
++    print(f"{'='*70}")
++
++
++if __name__ == "__main__":
++    main()
+diff --git a/requirements.txt b/requirements.txt
+index af619e9..81c5faa 100644
+--- a/requirements.txt
++++ b/requirements.txt
+@@ -14,7 +14,7 @@ ftfy
+ dashscope
+ imageio-ffmpeg
+ numpy>=1.23.5,<2
+-openai-whisper
++openai-whisper  # CosyVoice 官方要求 ==20231117, 但 Python 3.12 安装该版本需先 pip install setuptools
+ HyperPyYAML
+ onnxruntime
+ inflect

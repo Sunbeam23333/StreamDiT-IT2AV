@@ -1,0 +1,126 @@
+# ============================================================================
+# WorldModel TTS 统一环境依赖（实用版）
+#
+# 目标：给 TTS benchmark / 统一脚本提供一套尽量兼容的依赖基线。
+#
+# 适用范围：
+#   - ChatTTS
+#   - Spark-TTS
+#   - F5-TTS
+#   - CosyVoice / CosyVoice2 / CosyVoice3（多数场景可共用，但官方仍推荐单独环境）
+#
+# 暂不纳入统一环境：
+#   - Fish-Speech S2
+#     原因：官方 pyproject 绑定 torch==2.8.0，且依赖链明显重于当前其它 TTS；
+#     现有项目内旧版 1.5 runner 也已与 vendored repo 脱节，建议单独环境或服务化接入。
+#
+# 推荐环境：
+#   conda activate it2av
+#   pip install torch==2.5.1 torchaudio==2.5.1 --index-url https://download.pytorch.org/whl/cu124
+#   pip install -r script/audio/requirements_tts_unified.txt
+#
+# 如果当前环境里已经装好 torch / torchaudio，可直接执行最后一行。
+# 如果要在同一环境中跑 CosyVoice：
+#   Linux + CUDA 建议额外安装：
+#   pip install onnxruntime-gpu==1.20.1
+#
+# 说明：
+#   1. 本文件偏向“能跑 benchmark”的统一基线，而不是逐仓库一比一复刻官方环境。
+#   2. 若某个模型需要官方满血能力（训练/WebUI/服务化），优先使用其 repo 原生 requirements / pyproject。
+#   3. ChatTTS 的 `pynini` / `WeTextProcessing` / `nemo_text_processing` 不纳入默认 pip 安装。
+#      原因：它们主要用于文本归一化，官方示例也按“可选增强项”处理；其中 `pynini` 常在 Python 3.12+
+#      或部分 Linux 环境下退回源码构建并失败。统一 benchmark 不依赖它们。
+#   4. 如果你确实要启用 ChatTTS 文本归一化，建议单独执行：
+#      conda install -c conda-forge pynini=2.1.5
+#      pip install WeTextProcessing nemo_text_processing
+# ============================================================================
+
+# ---------------------------------------------------------------------------
+# 核心推理栈
+# ---------------------------------------------------------------------------
+accelerate>=0.33,<2
+cached_path>=1.6,<2
+datasets>=2.18,<4
+gradio>=5,<6
+huggingface_hub>=0.25,<1
+matplotlib>=3.7,<4
+numpy>=1.26,<3
+omegaconf==2.3.0
+packaging>=24,<26
+pydantic>=2.7,<3
+safetensors>=0.4,<1
+scipy>=1.11,<2
+soundfile>=0.12,<1
+tqdm>=4.66,<5
+transformers==4.57.1
+
+# ---------------------------------------------------------------------------
+# 通用音频处理
+# ---------------------------------------------------------------------------
+av
+librosa>=0.10,<1
+pydub>=0.25,<1
+soxr>=0.5,<1
+
+# ---------------------------------------------------------------------------
+# F5-TTS 相关
+# ---------------------------------------------------------------------------
+click>=8.1,<9
+ema_pytorch>=0.5.2,<1
+hydra-core>=1.3,<2
+pypinyin>=0.53,<1
+rjieba>=0.1.13
+soundfile>=0.12,<1
+tomli>=2,<3
+torchcodec>=0.7,<1
+torchdiffeq>=0.2.4,<1
+transformers_stream_generator>=0.0.5,<1
+unidecode>=1.3,<2
+vocos>=0.1.0,<1
+x_transformers>=1.31,<2
+
+# ---------------------------------------------------------------------------
+# Spark-TTS 相关
+# ---------------------------------------------------------------------------
+einops==0.8.1
+einx==0.3.0
+
+# ---------------------------------------------------------------------------
+# ChatTTS 相关
+# ---------------------------------------------------------------------------
+# 这里保留 ChatTTS 核心推理依赖；文本归一化增强项见文件头说明，按需单独安装。
+IPython
+numba
+pybase16384>=0.3.7,<1
+vector_quantize_pytorch>=1.15,<2
+
+# ---------------------------------------------------------------------------
+# CosyVoice 相关（统一环境可选增强项）
+# ---------------------------------------------------------------------------
+# 注意：CosyVoice benchmark 实际会走到 third_party/Matcha-TTS，必须补齐 diffusers；
+# 另外 gdown / grpcio / grpcio-tools / tensorboard / fastapi-cli 都在官方 requirements 中。
+conformer==0.3.2
+deepspeed>=0.15.1,<0.17; sys_platform == 'linux'
+diffusers==0.29.0
+fastapi>=0.115,<1
+fastapi-cli>=0.0.4,<1
+gdown>=5.1,<6
+grpcio>=1.57,<2
+grpcio-tools>=1.57,<2
+HyperPyYAML>=1.2.3,<2
+inflect>=7.3,<8
+lightning>=2.2,<2.7
+modelscope>=1.20,<1.35
+networkx>=3.1,<4
+onnx>=1.16,<2
+onnxruntime==1.20.1; sys_platform != 'linux'
+onnxruntime-gpu==1.20.1; sys_platform == 'linux'
+openai-whisper>=20231117
+protobuf>=4.25,<6
+pyarrow>=18,<24
+pyworld>=0.3.4,<1
+rich>=13,<15
+tensorboard>=2.14,<3
+uvicorn>=0.30,<1
+wetext==0.0.4
+wget>=3.2,<4

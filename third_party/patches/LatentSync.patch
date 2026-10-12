@@ -1,0 +1,109 @@
+diff --git a/latentsync/pipelines/lipsync_pipeline.py b/latentsync/pipelines/lipsync_pipeline.py
+index 693155e..62c1306 100644
+--- a/latentsync/pipelines/lipsync_pipeline.py
++++ b/latentsync/pipelines/lipsync_pipeline.py
+@@ -253,13 +253,51 @@ class LipsyncPipeline(DiffusionPipeline):
+         faces = []
+         boxes = []
+         affine_matrices = []
++        # 用于在人脸检测失败时复用上一帧的结果
++        last_face = None
++        last_box = None
++        last_affine_matrix = None
++        skipped = 0
+         print(f"Affine transforming {len(video_frames)} faces...")
+-        for frame in tqdm.tqdm(video_frames):
+-            face, box, affine_matrix = self.image_processor.affine_transform(frame)
++        for i, frame in enumerate(tqdm.tqdm(video_frames)):
++            try:
++                face, box, affine_matrix = self.image_processor.affine_transform(frame)
++                last_face = face
++                last_box = box
++                last_affine_matrix = affine_matrix
++            except RuntimeError:
++                # 人脸检测失败 (转头/遮挡等), 复用上一帧的结果
++                if last_face is not None:
++                    face, box, affine_matrix = last_face, last_box, last_affine_matrix
++                    skipped += 1
++                else:
++                    # 连第一帧都检测不到, 尝试后续帧
++                    # 先用一个空占位, 后面再回填
++                    faces.append(None)
++                    boxes.append(None)
++                    affine_matrices.append(None)
++                    skipped += 1
++                    continue
+             faces.append(face)
+             boxes.append(box)
+             affine_matrices.append(affine_matrix)
+ 
++        # 回填开头检测失败的帧 (如果有的话)
++        if last_face is not None:
++            for i in range(len(faces)):
++                if faces[i] is None:
++                    faces[i] = last_face
++                    boxes[i] = last_box
++                    affine_matrices[i] = last_affine_matrix
++                else:
++                    break  # 遇到第一个成功的就不用继续了
++
++        if skipped > 0:
++            print(f"  ⚠️  {skipped}/{len(video_frames)} frames had no face detected, reused nearest neighbor")
++
++        if all(f is None for f in faces):
++            raise RuntimeError("No face detected in any frame of the video")
++
+         faces = torch.stack(faces)
+         return faces, boxes, affine_matrices
+ 
+diff --git a/requirements.txt b/requirements.txt
+index 38f9cd0..9699deb 100644
+--- a/requirements.txt
++++ b/requirements.txt
+@@ -1,13 +1,24 @@
++# ============================================================================
++# LatentSync 1.6 Requirements
++# 与项目统一的核心依赖版本, 避免与其他模块冲突
++# ============================================================================
++
++# ----- PyTorch (CUDA 12.1) -----
+ torch==2.5.1
+ torchvision==0.20.1
++torchaudio==2.5.1
+ --extra-index-url https://download.pytorch.org/whl/cu121
+-diffusers==0.32.2
+-transformers==4.48.0
+-decord==0.6.0
+-accelerate==0.26.1
++
++# ----- 核心 AI 框架 (与项目统一版本) -----
++transformers==4.57.1
++diffusers>=0.33.0,<1
++accelerate>=0.34.2
++huggingface-hub>=0.30.2
++
++# ----- LatentSync 专用依赖 -----
+ einops==0.7.0
+ omegaconf==2.3.0
+-opencv-python==4.9.0.80
++opencv-python>=4.9.0
+ mediapipe==0.10.11
+ python_speech_features==0.6
+ librosa==0.10.1
+@@ -17,10 +28,12 @@ imageio==2.31.1
+ imageio-ffmpeg==0.5.1
+ lpips==0.1.4
+ face-alignment==1.4.1
+-gradio==5.24.0
+-huggingface-hub==0.30.2
+ numpy==1.26.4
+ kornia==0.8.0
+ insightface==0.7.3
+ onnxruntime-gpu==1.21.0
+-DeepCache==0.1.1
+\ No newline at end of file
++DeepCache==0.1.1
++decord==0.6.0
++
++# ----- Gradio (可选, 用于 Web UI) -----
++gradio>=5.18.0

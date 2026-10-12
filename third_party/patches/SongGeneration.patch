@@ -1,0 +1,494 @@
+diff --git a/codeclm/models/levo.py b/codeclm/models/levo.py
+index 2514a55..5073f8a 100644
+--- a/codeclm/models/levo.py
++++ b/codeclm/models/levo.py
+@@ -96,7 +96,10 @@ class LmModel(LlamaModel_base):
+         self.vocab_size = config.vocab_size
+         layer_cls = LlamaDecoderLayer   # cross attention decoder layer can be overwritten here
+ 
+-        assert version.parse(transformers.__version__) < version.parse("4.40")
++        # NOTE: 原始检查要求 transformers < 4.40, 但 SongGeneration 自带了
++        # 完整的 llama 实现 (codeclm/models/llama/), 不依赖 transformers 内置的
++        # LlamaModel, 因此跳过此版本限制以兼容新版 transformers 环境.
++        # assert version.parse(transformers.__version__) < version.parse("4.40")
+ 
+         self.layers = nn.ModuleList([layer_cls(config) for _ in range(config.num_hidden_layers)])
+         self.norm = LlamaRMSNorm(config.hidden_size, eps=config.rms_norm_eps)
+diff --git a/codeclm/models/llama/modeling_llama.py b/codeclm/models/llama/modeling_llama.py
+index 0e7d4f8..086eea9 100644
+--- a/codeclm/models/llama/modeling_llama.py
++++ b/codeclm/models/llama/modeling_llama.py
+@@ -34,12 +34,19 @@ from transformers.pytorch_utils import ALL_LAYERNORM_LAYERS
+ from transformers.utils import (
+     add_start_docstrings,
+     add_start_docstrings_to_model_forward,
+-    is_flash_attn_available,
+     logging,
+     replace_return_docstrings,
+ )
+ from .configuration_llama import LlamaConfig
+ 
++# 兼容新旧版 transformers:
++#   - transformers < 4.36: is_flash_attn_available
++#   - transformers >= 4.36: is_flash_attn_2_available (旧名被移除)
++try:
++    from transformers.utils import is_flash_attn_2_available as is_flash_attn_available
++except ImportError:
++    from transformers.utils import is_flash_attn_available
++
+ 
+ if is_flash_attn_available():
+     from flash_attn import flash_attn_func, flash_attn_varlen_func
+diff --git a/codeclm/tokenizer/Flow1dVAE/models_gpt/models/_compat.py b/codeclm/tokenizer/Flow1dVAE/models_gpt/models/_compat.py
+new file mode 100644
+index 0000000..ed3356c
+--- /dev/null
++++ b/codeclm/tokenizer/Flow1dVAE/models_gpt/models/_compat.py
+@@ -0,0 +1,67 @@
++"""Compatibility shim for transformers API changes.
++
++In transformers >= 4.47, SequenceSummary was removed from modeling_utils.
++This module provides a drop-in replacement.
++"""
++
++try:
++    from transformers.modeling_utils import SequenceSummary  # noqa: F401
++except ImportError:
++    import torch.nn as nn
++    from transformers.activations import get_activation
++
++    class SequenceSummary(nn.Module):  # type: ignore[no-redef]
++        """Compute a single vector summary of a sequence hidden states (compatible shim)."""
++
++        def __init__(self, config):
++            super().__init__()
++            self.summary_type = getattr(config, "summary_type", "last")
++            self.summary = nn.Identity()
++            if hasattr(config, "summary_use_proj") and config.summary_use_proj:
++                if (
++                    hasattr(config, "summary_proj_to_labels")
++                    and config.summary_proj_to_labels
++                    and config.num_labels > 0
++                ):
++                    num_classes = config.num_labels
++                else:
++                    num_classes = config.hidden_size
++                self.summary = nn.Linear(config.hidden_size, num_classes)
++            activation_string = getattr(config, "summary_activation", None)
++            self.activation = (
++                get_activation(activation_string) if activation_string else nn.Identity()
++            )
++            self.first_dropout = nn.Identity()
++            if hasattr(config, "summary_first_dropout") and config.summary_first_dropout > 0:
++                self.first_dropout = nn.Dropout(config.summary_first_dropout)
++            self.last_dropout = nn.Identity()
++            if hasattr(config, "summary_last_dropout") and config.summary_last_dropout > 0:
++                self.last_dropout = nn.Dropout(config.summary_last_dropout)
++
++        def forward(self, hidden_states, cls_index=None):
++            if self.summary_type == "last":
++                output = hidden_states[:, -1]
++            elif self.summary_type == "first":
++                output = hidden_states[:, 0]
++            elif self.summary_type == "mean":
++                output = hidden_states.mean(dim=1)
++            elif self.summary_type == "cls_index":
++                if cls_index is None:
++                    cls_index = hidden_states.new_full(
++                        hidden_states.shape[:-1],
++                        hidden_states.shape[1] - 1,
++                        dtype=hidden_states.long(),
++                    )
++                cls_index = (
++                    cls_index.unsqueeze(-1)
++                    .unsqueeze(-1)
++                    .expand(-1, -1, -1, hidden_states.size(-1))
++                )
++                output = hidden_states.gather(-2, cls_index).squeeze(-2)
++            else:
++                output = hidden_states
++            output = self.first_dropout(output)
++            output = self.summary(output)
++            output = self.activation(output)
++            output = self.last_dropout(output)
++            return output
+diff --git a/codeclm/tokenizer/Flow1dVAE/models_gpt/models/gpt2.py b/codeclm/tokenizer/Flow1dVAE/models_gpt/models/gpt2.py
+index 8199aa1..55d26e3 100644
+--- a/codeclm/tokenizer/Flow1dVAE/models_gpt/models/gpt2.py
++++ b/codeclm/tokenizer/Flow1dVAE/models_gpt/models/gpt2.py
+@@ -36,7 +36,11 @@ from transformers.modeling_outputs import (
+     SequenceClassifierOutputWithPast,
+     TokenClassifierOutput,
+ )
+-from transformers.modeling_utils import PreTrainedModel, SequenceSummary
++from transformers.modeling_utils import PreTrainedModel
++try:
++    from transformers.modeling_utils import SequenceSummary
++except ImportError:
++    from models_gpt.models._compat import SequenceSummary
+ from transformers.pytorch_utils import Conv1D, find_pruneable_heads_and_indices, prune_conv1d_layer
+ from transformers.utils import (
+     ModelOutput,
+diff --git a/codeclm/tokenizer/Flow1dVAE/models_gpt/models/gpt2_rope2.py b/codeclm/tokenizer/Flow1dVAE/models_gpt/models/gpt2_rope2.py
+index 7a37aa1..6718b96 100644
+--- a/codeclm/tokenizer/Flow1dVAE/models_gpt/models/gpt2_rope2.py
++++ b/codeclm/tokenizer/Flow1dVAE/models_gpt/models/gpt2_rope2.py
+@@ -36,7 +36,11 @@ from transformers.modeling_outputs import (
+     SequenceClassifierOutputWithPast,
+     TokenClassifierOutput,
+ )
+-from transformers.modeling_utils import PreTrainedModel, SequenceSummary
++from transformers.modeling_utils import PreTrainedModel
++try:
++    from transformers.modeling_utils import SequenceSummary
++except ImportError:
++    from models_gpt.models._compat import SequenceSummary
+ from transformers.pytorch_utils import Conv1D, find_pruneable_heads_and_indices, prune_conv1d_layer
+ from transformers.utils import (
+     ModelOutput,
+diff --git a/codeclm/tokenizer/Flow1dVAE/models_gpt/models/gpt2_rope2_casual_mask.py b/codeclm/tokenizer/Flow1dVAE/models_gpt/models/gpt2_rope2_casual_mask.py
+index e95948d..81b3cfb 100644
+--- a/codeclm/tokenizer/Flow1dVAE/models_gpt/models/gpt2_rope2_casual_mask.py
++++ b/codeclm/tokenizer/Flow1dVAE/models_gpt/models/gpt2_rope2_casual_mask.py
+@@ -36,7 +36,11 @@ from transformers.modeling_outputs import (
+     SequenceClassifierOutputWithPast,
+     TokenClassifierOutput,
+ )
+-from transformers.modeling_utils import PreTrainedModel, SequenceSummary
++from transformers.modeling_utils import PreTrainedModel
++try:
++    from transformers.modeling_utils import SequenceSummary
++except ImportError:
++    from models_gpt.models._compat import SequenceSummary
+ from transformers.pytorch_utils import Conv1D, find_pruneable_heads_and_indices, prune_conv1d_layer
+ from transformers.utils import (
+     ModelOutput,
+diff --git a/codeclm/tokenizer/Flow1dVAE/models_gpt/models/gpt2_rope2_time.py b/codeclm/tokenizer/Flow1dVAE/models_gpt/models/gpt2_rope2_time.py
+index 32ac7df..d5a3d5d 100644
+--- a/codeclm/tokenizer/Flow1dVAE/models_gpt/models/gpt2_rope2_time.py
++++ b/codeclm/tokenizer/Flow1dVAE/models_gpt/models/gpt2_rope2_time.py
+@@ -36,7 +36,11 @@ from transformers.modeling_outputs import (
+     SequenceClassifierOutputWithPast,
+     TokenClassifierOutput,
+ )
+-from transformers.modeling_utils import PreTrainedModel, SequenceSummary
++from transformers.modeling_utils import PreTrainedModel
++try:
++    from transformers.modeling_utils import SequenceSummary
++except ImportError:
++    from models_gpt.models._compat import SequenceSummary
+ from transformers.pytorch_utils import Conv1D, find_pruneable_heads_and_indices, prune_conv1d_layer
+ from transformers.utils import (
+     ModelOutput,
+diff --git a/codeclm/tokenizer/Flow1dVAE/models_gpt/models/gpt2_rope2_time_new copy.py b/codeclm/tokenizer/Flow1dVAE/models_gpt/models/gpt2_rope2_time_new copy.py
+index 03e1cb0..33bdd82 100644
+--- a/codeclm/tokenizer/Flow1dVAE/models_gpt/models/gpt2_rope2_time_new copy.py	
++++ b/codeclm/tokenizer/Flow1dVAE/models_gpt/models/gpt2_rope2_time_new copy.py	
+@@ -36,7 +36,11 @@ from transformers.modeling_outputs import (
+     SequenceClassifierOutputWithPast,
+     TokenClassifierOutput,
+ )
+-from transformers.modeling_utils import PreTrainedModel, SequenceSummary
++from transformers.modeling_utils import PreTrainedModel
++try:
++    from transformers.modeling_utils import SequenceSummary
++except ImportError:
++    from models_gpt.models._compat import SequenceSummary
+ from transformers.pytorch_utils import Conv1D, find_pruneable_heads_and_indices, prune_conv1d_layer
+ from transformers.utils import (
+     ModelOutput,
+diff --git a/codeclm/tokenizer/Flow1dVAE/models_gpt/models/gpt2_rope2_time_new.py b/codeclm/tokenizer/Flow1dVAE/models_gpt/models/gpt2_rope2_time_new.py
+index 03e1cb0..33bdd82 100644
+--- a/codeclm/tokenizer/Flow1dVAE/models_gpt/models/gpt2_rope2_time_new.py
++++ b/codeclm/tokenizer/Flow1dVAE/models_gpt/models/gpt2_rope2_time_new.py
+@@ -36,7 +36,11 @@ from transformers.modeling_outputs import (
+     SequenceClassifierOutputWithPast,
+     TokenClassifierOutput,
+ )
+-from transformers.modeling_utils import PreTrainedModel, SequenceSummary
++from transformers.modeling_utils import PreTrainedModel
++try:
++    from transformers.modeling_utils import SequenceSummary
++except ImportError:
++    from models_gpt.models._compat import SequenceSummary
+ from transformers.pytorch_utils import Conv1D, find_pruneable_heads_and_indices, prune_conv1d_layer
+ from transformers.utils import (
+     ModelOutput,
+diff --git a/codeclm/tokenizer/Flow1dVAE/models_gpt/models/gpt2_rope2_time_new_correct_mask.py b/codeclm/tokenizer/Flow1dVAE/models_gpt/models/gpt2_rope2_time_new_correct_mask.py
+index 0604939..7d2143f 100644
+--- a/codeclm/tokenizer/Flow1dVAE/models_gpt/models/gpt2_rope2_time_new_correct_mask.py
++++ b/codeclm/tokenizer/Flow1dVAE/models_gpt/models/gpt2_rope2_time_new_correct_mask.py
+@@ -36,7 +36,11 @@ from transformers.modeling_outputs import (
+     SequenceClassifierOutputWithPast,
+     TokenClassifierOutput,
+ )
+-from transformers.modeling_utils import PreTrainedModel, SequenceSummary
++from transformers.modeling_utils import PreTrainedModel
++try:
++    from transformers.modeling_utils import SequenceSummary
++except ImportError:
++    from models_gpt.models._compat import SequenceSummary
+ from transformers.pytorch_utils import Conv1D, find_pruneable_heads_and_indices, prune_conv1d_layer
+ from transformers.utils import (
+     ModelOutput,
+diff --git a/codeclm/tokenizer/Flow1dVAE/models_gpt/models/gpt2_rope2_time_new_correct_mask_noncasual.py b/codeclm/tokenizer/Flow1dVAE/models_gpt/models/gpt2_rope2_time_new_correct_mask_noncasual.py
+index a59b14b..beaae35 100644
+--- a/codeclm/tokenizer/Flow1dVAE/models_gpt/models/gpt2_rope2_time_new_correct_mask_noncasual.py
++++ b/codeclm/tokenizer/Flow1dVAE/models_gpt/models/gpt2_rope2_time_new_correct_mask_noncasual.py
+@@ -36,7 +36,11 @@ from transformers.modeling_outputs import (
+     SequenceClassifierOutputWithPast,
+     TokenClassifierOutput,
+ )
+-from transformers.modeling_utils import PreTrainedModel, SequenceSummary
++from transformers.modeling_utils import PreTrainedModel
++try:
++    from transformers.modeling_utils import SequenceSummary
++except ImportError:
++    from models_gpt.models._compat import SequenceSummary
+ from transformers.pytorch_utils import Conv1D, find_pruneable_heads_and_indices, prune_conv1d_layer
+ from transformers.utils import (
+     ModelOutput,
+diff --git a/codeclm/tokenizer/Flow1dVAE/models_gpt/models/gpt2_rope2_time_new_correct_mask_noncasual_flashattn.py b/codeclm/tokenizer/Flow1dVAE/models_gpt/models/gpt2_rope2_time_new_correct_mask_noncasual_flashattn.py
+index fbf05c1..e0779d9 100644
+--- a/codeclm/tokenizer/Flow1dVAE/models_gpt/models/gpt2_rope2_time_new_correct_mask_noncasual_flashattn.py
++++ b/codeclm/tokenizer/Flow1dVAE/models_gpt/models/gpt2_rope2_time_new_correct_mask_noncasual_flashattn.py
+@@ -36,7 +36,11 @@ from transformers.modeling_outputs import (
+     SequenceClassifierOutputWithPast,
+     TokenClassifierOutput,
+ )
+-from transformers.modeling_utils import PreTrainedModel, SequenceSummary
++from transformers.modeling_utils import PreTrainedModel
++try:
++    from transformers.modeling_utils import SequenceSummary
++except ImportError:
++    from models_gpt.models._compat import SequenceSummary
+ from transformers.pytorch_utils import Conv1D, find_pruneable_heads_and_indices, prune_conv1d_layer
+ from transformers.utils import (
+     ModelOutput,
+diff --git a/codeclm/tokenizer/Flow1dVAE/models_gpt/models/gpt2_rope2_time_new_correct_mask_noncasual_reflow.py b/codeclm/tokenizer/Flow1dVAE/models_gpt/models/gpt2_rope2_time_new_correct_mask_noncasual_reflow.py
+index f6fec37..210a818 100644
+--- a/codeclm/tokenizer/Flow1dVAE/models_gpt/models/gpt2_rope2_time_new_correct_mask_noncasual_reflow.py
++++ b/codeclm/tokenizer/Flow1dVAE/models_gpt/models/gpt2_rope2_time_new_correct_mask_noncasual_reflow.py
+@@ -37,7 +37,11 @@ from transformers.modeling_outputs import (
+     SequenceClassifierOutputWithPast,
+     TokenClassifierOutput,
+ )
+-from transformers.modeling_utils import PreTrainedModel, SequenceSummary
++from transformers.modeling_utils import PreTrainedModel
++try:
++    from transformers.modeling_utils import SequenceSummary
++except ImportError:
++    from models_gpt.models._compat import SequenceSummary
+ from transformers.pytorch_utils import Conv1D, find_pruneable_heads_and_indices, prune_conv1d_layer
+ from transformers.utils import (
+     ModelOutput,
+diff --git a/codeclm/tokenizer/Flow1dVAE/models_gpt/models/gpt2_rope2_time_new_flashattn.py b/codeclm/tokenizer/Flow1dVAE/models_gpt/models/gpt2_rope2_time_new_flashattn.py
+index beba839..1c57980 100644
+--- a/codeclm/tokenizer/Flow1dVAE/models_gpt/models/gpt2_rope2_time_new_flashattn.py
++++ b/codeclm/tokenizer/Flow1dVAE/models_gpt/models/gpt2_rope2_time_new_flashattn.py
+@@ -36,7 +36,11 @@ from transformers.modeling_outputs import (
+     SequenceClassifierOutputWithPast,
+     TokenClassifierOutput,
+ )
+-from transformers.modeling_utils import PreTrainedModel, SequenceSummary
++from transformers.modeling_utils import PreTrainedModel
++try:
++    from transformers.modeling_utils import SequenceSummary
++except ImportError:
++    from models_gpt.models._compat import SequenceSummary
+ from transformers.pytorch_utils import Conv1D, find_pruneable_heads_and_indices, prune_conv1d_layer
+ from transformers.utils import (
+     ModelOutput,
+diff --git a/codeclm/tokenizer/Flow1dVAE/models_gpt/models/gpt2_rope3.py b/codeclm/tokenizer/Flow1dVAE/models_gpt/models/gpt2_rope3.py
+index 06bb425..63a8ab4 100644
+--- a/codeclm/tokenizer/Flow1dVAE/models_gpt/models/gpt2_rope3.py
++++ b/codeclm/tokenizer/Flow1dVAE/models_gpt/models/gpt2_rope3.py
+@@ -36,7 +36,11 @@ from transformers.modeling_outputs import (
+     SequenceClassifierOutputWithPast,
+     TokenClassifierOutput,
+ )
+-from transformers.modeling_utils import PreTrainedModel, SequenceSummary
++from transformers.modeling_utils import PreTrainedModel
++try:
++    from transformers.modeling_utils import SequenceSummary
++except ImportError:
++    from models_gpt.models._compat import SequenceSummary
+ from transformers.pytorch_utils import Conv1D, find_pruneable_heads_and_indices, prune_conv1d_layer
+ from transformers.utils import (
+     ModelOutput,
+diff --git a/generate.py b/generate.py
+index 1dcd73b..b525d82 100644
+--- a/generate.py
++++ b/generate.py
+@@ -17,6 +17,107 @@ from third_party.demucs.models.pretrained import get_model_from_yaml
+ import re
+ import librosa
+ 
++# 脚本所在目录 (用于定位 tools/ 等相对资源)
++_SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
++
++
++def _resolve_lfs_file(filepath: str,
++                      github_raw_url: str | None = None) -> str:
++    """检查文件是否为 Git LFS 指针, 如果是则从 GitHub 下载真实文件.
++
++    GitHub 的 media.githubusercontent.com 会自动解析 LFS 指针并返回真实文件内容.
++
++    Args:
++        filepath: 待检查的本地文件路径 (绝对路径)
++        github_raw_url: GitHub raw URL, 默认根据文件相对路径自动构建
++    Returns:
++        filepath (已被替换为真实文件)
++    """
++    if not os.path.isfile(filepath):
++        return filepath
++    # LFS 指针文件通常 < 200 字节, 且以 "version https://git-lfs" 开头
++    if os.path.getsize(filepath) > 1024:
++        return filepath  # 真实文件, 无需处理
++    try:
++        with open(filepath, "rb") as f:
++            header = f.read(40)
++        if not header.startswith(b"version https://git-lfs"):
++            return filepath  # 不是 LFS 指针
++    except OSError:
++        return filepath
++
++    # 从 LFS 指针中解析预期大小
++    expected_size = None
++    try:
++        with open(filepath, "r") as f:
++            for line in f:
++                if line.startswith("size "):
++                    expected_size = int(line.strip().split()[-1])
++                    break
++    except Exception:
++        pass
++
++    # 构建 GitHub raw URL
++    if github_raw_url is None:
++        rel_path = os.path.relpath(filepath, _SCRIPT_DIR)
++        github_raw_url = (
++            os.environ.get("SONGGEN_LFS_BASE_URL",
++                           "https://media.githubusercontent.com/media/tencent-ailab/SongGeneration/main")
++            + f"/{rel_path}"
++        )
++
++    print(f"[SongGeneration] {os.path.basename(filepath)} is a Git LFS pointer "
++          f"({os.path.getsize(filepath)} bytes), expected real size: {expected_size} bytes")
++    print(f"[SongGeneration] Downloading from GitHub: {github_raw_url}")
++
++    # 可选代理: IT2AV_PROXY_URL (仅在环境中未配置 HTTP(S)_PROXY 时生效)
++    _proxy_url = os.environ.get("IT2AV_PROXY_URL", "")
++    _proxy_env_set = False
++    if _proxy_url and not os.environ.get("HTTP_PROXY") and not os.environ.get("HTTPS_PROXY"):
++        os.environ["HTTP_PROXY"] = _proxy_url
++        os.environ["HTTPS_PROXY"] = _proxy_url
++        os.environ.setdefault("NO_PROXY", "localhost,127.0.0.1")
++        _proxy_env_set = True
++
++    try:
++        import urllib.request
++        tmp_path = filepath + ".downloading"
++        urllib.request.urlretrieve(github_raw_url, tmp_path)
++        downloaded_size = os.path.getsize(tmp_path)
++
++        # 验证: 下载的文件不能还是 LFS 指针
++        with open(tmp_path, "rb") as f:
++            dl_header = f.read(40)
++        if dl_header.startswith(b"version https://git-lfs"):
++            os.remove(tmp_path)
++            raise RuntimeError("Downloaded file is still a Git LFS pointer")
++
++        # 验证: 如果知道预期大小, 检查是否匹配
++        if expected_size and downloaded_size != expected_size:
++            print(f"[SongGeneration] WARNING: size mismatch (got {downloaded_size}, expected {expected_size})")
++
++        # 替换原文件
++        os.replace(tmp_path, filepath)
++        print(f"[SongGeneration] Downloaded real file: {filepath} ({os.path.getsize(filepath)} bytes)")
++    except Exception as e:
++        # 清理临时文件
++        tmp_path = filepath + ".downloading"
++        if os.path.exists(tmp_path):
++            os.remove(tmp_path)
++        print(f"[SongGeneration] WARNING: Failed to download: {e}")
++        print(f"[SongGeneration] Please manually download:")
++        print(f"[SongGeneration]   curl -L -o '{filepath}' '{github_raw_url}'")
++        raise RuntimeError(
++            f"Cannot load {filepath}: file is a Git LFS pointer and auto-download failed. "
++            f"Manual fix: curl -L -o '{filepath}' '{github_raw_url}'"
++        ) from e
++    finally:
++        if _proxy_env_set:
++            os.environ.pop("HTTP_PROXY", None)
++            os.environ.pop("HTTPS_PROXY", None)
++    return filepath
++
++
+ auto_prompt_type = ['Pop', 'Latin', 'Rock', 'Electronic', 'Metal', 'Country', 'R&B/Soul', 'Ballad', 'Jazz', 'World', 'Hip-Hop', 'Funk', 'Soundtrack','Auto']
+ 
+ def check_language_by_text(text):
+@@ -123,7 +224,8 @@ def generate(args, version = 'v1'):
+     
+ 
+     separator = Separator()
+-    auto_prompt = torch.load('tools/new_auto_prompt.pt')
++    _auto_prompt_path = _resolve_lfs_file(os.path.join(_SCRIPT_DIR, 'tools', 'new_auto_prompt.pt'))
++    auto_prompt = torch.load(_auto_prompt_path, weights_only=False)
+     audio_tokenizer = builders.get_audio_tokenizer_model(cfg.audio_tokenizer_checkpoint, cfg)
+     audio_tokenizer = audio_tokenizer.eval().cuda()
+     with open(input_jsonl, "r") as fp:
+@@ -337,7 +439,8 @@ def generate_lowmem(args, version = 'v1'):
+         separator = Separator()
+         audio_tokenizer = builders.get_audio_tokenizer_model(cfg.audio_tokenizer_checkpoint, cfg)
+         audio_tokenizer = audio_tokenizer.eval().cuda()
+-    auto_prompt = torch.load('tools/new_auto_prompt.pt')
++    _auto_prompt_path = _resolve_lfs_file(os.path.join(_SCRIPT_DIR, 'tools', 'new_auto_prompt.pt'))
++    auto_prompt = torch.load(_auto_prompt_path, weights_only=False)
+     new_items = []
+     for line in lines:
+         item = json.loads(line)
+@@ -424,7 +527,7 @@ def generate_lowmem(args, version = 'v1'):
+ 
+     # Define model or load pretrained model
+     audiolm = builders.get_lm_model(cfg, version=version)
+-    checkpoint = torch.load(ckpt_path, map_location='cpu')
++    checkpoint = torch.load(ckpt_path, map_location='cpu', weights_only=False)
+     audiolm_state_dict = {k.replace('audiolm.', ''): v for k, v in checkpoint.items() if k.startswith('audiolm')}
+     audiolm.load_state_dict(audiolm_state_dict, strict=False)
+     audiolm = audiolm.eval()
+diff --git a/tools/gradio/levo_inference.py b/tools/gradio/levo_inference.py
+index 046a2a3..ca9b926 100644
+--- a/tools/gradio/levo_inference.py
++++ b/tools/gradio/levo_inference.py
+@@ -86,7 +86,7 @@ class LeVoInference(torch.nn.Module):
+             pmt_wav, vocal_wav, bgm_wav = self.separator.run(prompt_audio_path)
+             melody_is_wav = True
+         elif genre is not None and auto_prompt_path is not None:
+-            auto_prompt = torch.load(auto_prompt_path)
++            auto_prompt = torch.load(auto_prompt_path, weights_only=False)
+             lang = check_language_by_text(lyric)
+             prompt_token = auto_prompt[genre][lang][np.random.randint(0, len(auto_prompt[genre][lang]))]
+             pmt_wav = prompt_token[:,[0],:]
+diff --git a/tools/gradio/levo_inference_lowmem.py b/tools/gradio/levo_inference_lowmem.py
+index 2f70578..cdd6912 100644
+--- a/tools/gradio/levo_inference_lowmem.py
++++ b/tools/gradio/levo_inference_lowmem.py
+@@ -81,7 +81,7 @@ class LeVoInference(torch.nn.Module):
+             melody_is_wav = False
+             torch.cuda.empty_cache()
+         elif genre is not None and auto_prompt_path is not None:
+-            auto_prompt = torch.load(auto_prompt_path)
++            auto_prompt = torch.load(auto_prompt_path, weights_only=False)
+             lang = check_language_by_text(lyric)
+             prompt_token = auto_prompt[genre][lang][np.random.randint(0, len(auto_prompt[genre][lang]))]
+             pmt_wav = prompt_token[:,[0],:]
+@@ -95,7 +95,7 @@ class LeVoInference(torch.nn.Module):
+             melody_is_wav = True
+ 
+         audiolm = builders.get_lm_model(self.cfg, version="v2")
+-        checkpoint = torch.load(self.pt_path, map_location='cpu')
++        checkpoint = torch.load(self.pt_path, map_location='cpu', weights_only=False)
+         audiolm_state_dict = {k.replace('audiolm.', ''): v for k, v in checkpoint.items() if k.startswith('audiolm')}
+         audiolm.load_state_dict(audiolm_state_dict, strict=False)
+         audiolm = audiolm.eval()
